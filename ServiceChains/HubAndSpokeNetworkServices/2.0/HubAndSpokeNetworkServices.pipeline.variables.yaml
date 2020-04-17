@@ -1,0 +1,23 @@
+variables:
+  pipelineName: HubAndSpokeNetworkServices
+  pipelineVersion: 2.0
+
+  artifactName:  Artifacts
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  location: Australia East
+  poolName: Hosted VS2017
+
+  system.debug: true
+
+  templateFile_nsg: '$(System.ArtifactsDirectory)/$(artifactName)/NetworkSecurityGroups_2.0/NetworkSecurityGroups.deploy.json'
+  parametersFile_nsg_hub: '$(System.ArtifactsDirectory)/$(artifactName)/NetworkSecurityGroups_2.0/NetworkSecurityGroups.hub.parameters.$(environment).json'
+  parametersFile_nsg_spoke01: '$(System.ArtifactsDirectory)/$(artifactName)/NetworkSecurityGroups_2.0/NetworkSecurityGroups.spoke01.parameters.$(environment).json'  
+
+  templateFile_net: '$(System.ArtifactsDirectory)/$(artifactName)/VirtualNetwork_2.0/VirtualNetwork.deploy.json'
+  parametersFile_net_hub: '$(System.ArtifactsDirectory)/$(artifactName)/VirtualNetwork_2.0/vNethub.parameters.$(environment).json'
+  parametersFile_net_spoke01: '$(System.ArtifactsDirectory)/$(artifactName)/VirtualNetwork_2.0/vNetspoke01.parameters.$(environment).json'
+
+  templateFile_vnp: '$(System.ArtifactsDirectory)/$(artifactName)/VirtualNetworkPeering_2.0/VirtualNetworkPeering.deploy.json'
+  parametersFile_vnp_hub2spoke01: '$(System.ArtifactsDirectory)/$(artifactName)/VirtualNetworkPeering_2.0/VirtualNetworkPeering.hub2spoke01.parameters.$(environment).json'
+  parametersFile_vnp_spoke012hub: '$(System.ArtifactsDirectory)/$(artifactName)/VirtualNetworkPeering_2.0/VirtualNetworkPeering.spoke012hub.parameters.$(environment).json'    

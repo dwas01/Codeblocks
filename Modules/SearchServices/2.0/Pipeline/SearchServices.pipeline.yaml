@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: SearchServices.pipeline.variables.yaml
+- template: SearchServices.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/SearchServices/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: SearchServices.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: SearchServices.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: SearchServices.pipeline.deploy.yaml

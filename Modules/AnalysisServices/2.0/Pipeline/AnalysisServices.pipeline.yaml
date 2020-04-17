@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: AnalysisServices.pipeline.variables.yaml
+- template: AnalysisServices.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/AnalysisServices/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: AnalysisServices.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: AnalysisServices.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: AnalysisServices.pipeline.deploy.yaml

@@ -1,0 +1,15 @@
+variables:
+  moduleName: SQLServerDB
+  moduleVersion: 2.0
+  moduleTier: Modules
+  moduleSolutionName: SQLServerDB_2.0
+  modulePath: $(moduleTier)/$(moduleName)/$(moduleVersion)
+
+  artifactName: Artifacts
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  location: Southeast Asia
+  poolName: Hosted VS2017
+
+  templateFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleSolutionName)/$(moduleName).deploy.json'
+  parametersFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleSolutionName)/$(moduleName).parameters.$(environment).json'

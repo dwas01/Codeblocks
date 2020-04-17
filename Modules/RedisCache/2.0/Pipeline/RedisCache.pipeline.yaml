@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: RedisCaches.pipeline.variables.yaml
+- template: RedisCaches.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/RedisCaches/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: RedisCaches.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: RedisCaches.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: RedisCaches.pipeline.deploy.yaml

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "value": "$(clusterName)"
+    },
+    "clusterLoginUserName": {
+      "value": "$(clusterLoginUserName)"
+    },
+    "clusterLoginPassword": {
+      "value": "$(clusterLoginPassword)"
+    },
+    "sshUserName": {
+      "value": "$(sshUserName)"
+    },
+    "sshPublicKey": {
+      "value": "$(sshPublicKey)"
+    },
+    "clusterStorageAccountName": {
+      "value": "$(clusterStorageAccountName)"
+    },
+    "storageaccountResourceId": {
+      "value": "$(storageaccountResourceId)"
+    },
+    "managedIdentityResourceId": {
+      "value": "$(managedIdentityResourceId)"
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

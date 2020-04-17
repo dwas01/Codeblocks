@@ -1,0 +1,8 @@
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
+metadata:
+  name: <name-env-aks-mid>
+spec:
+  type: 0
+  ResourceID: /subscriptions/<subscriptions().id>/resourcegroups/<resourcegroup MC_>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<name-env-aks-mid>
+  ClientID: <ClientID>

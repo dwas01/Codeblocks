@@ -1,0 +1,32 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'  
+    resourceGroup: RG-DEV-AKV
+    connectionService: azure-spn
+    overrideParameters: '' 
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'   
+    resourceGroup: RG-SIT-AKV
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'     
+    resourceGroup: RG-UAT-AKV
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'    
+    resourceGroup: RG-PRD-AKV
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: prd-akv-001

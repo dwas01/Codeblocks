@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "value": "$(sqlServerName)"
+    },
+    "databasesNames": {
+      "value": [
+        {
+          "databaseName": "$(databaseName)"
+        },
+        {
+          "databaseName": "$(databaseName)"
+        }
+      ]
+    },
+    "skuName": {
+      "value": [
+        {
+          "Name": "$(skuName)"
+        },
+        {
+          "Name": "$(skuName)"
+        }
+      ]
+    },
+    "skuTier": {
+      "value": [
+        {
+          "Tier": "$(skuTier)"
+        },
+        {
+          "Tier": "$(skuTier)"
+        }
+      ]
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

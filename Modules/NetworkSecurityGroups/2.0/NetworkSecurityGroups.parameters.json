@@ -1,0 +1,93 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSecurityGroupName": {
+      "value": "$(networkSecurityGroupsName)"
+    },
+    "networkSecurityGroupSecurityRules": {
+      "value": [
+        {
+          "name": "Allow_Inbound_rdp_rule_example",
+          "properties": {
+            "description": "Allow RDP traffic",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "3389",
+            "sourceAddressPrefix": "Internet",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 100,
+            "direction": "Inbound"
+          }
+        },
+        {
+          "name": "Allow_Inbound_web_rule_example",
+          "properties": {
+            "description": "Allow WEB traffic",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRanges": [
+              "80",
+              "443"
+            ],
+            "sourceAddressPrefix": "Internet",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 101,
+            "direction": "Inbound"
+          }
+        },
+        {
+          "name": "Allow_Inbound_ssh_rule_example",
+          "properties": {
+            "description": "Allows SSH traffic",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "22",
+            "sourceAddressPrefix": "*",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 102,
+            "direction": "Inbound"
+          }
+        },
+        {
+          "name": "Allow_Inbound_management_rule_example",
+          "properties": {
+            "description": "Allows management traffic",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "5986",
+            "sourceAddressPrefix": "*",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 103,
+            "direction": "Inbound"
+          }
+        }
+      ]
+    },
+    "diagnosticStorageAccountId": {
+      "value": "$(diagnosticStorageAccountId)"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "$(logAnalyticsWorkspaceId)"
+    },
+     "logsRetentionInDays": {
+      "value": 30
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

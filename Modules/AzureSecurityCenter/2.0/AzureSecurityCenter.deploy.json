@@ -1,0 +1,133 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Reguired. Resource identifier of Log Analytics Workspace"
+      }
+    },
+    "autoProvisioning": {
+      "type": "string",
+      "allowedValues": [
+        "On",
+        "Off"
+      ],
+      "defaultValue": "On",
+      "metadata": {
+        "description": "Optional. Turns automatic deployment of a Log Analytics workspace"
+      }
+    },
+    "pricingTier": {
+      "type": "string",
+      "allowedValues": [
+        "free",
+        "standard"
+      ],
+      "defaultValue": "standard",
+      "metadata": {
+        "description": "Optional. The pricing tier value"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    }
+  },
+  "variables": {
+    "pricingsApiVersion": "[providers('Microsoft.Security','pricings').apiVersions[0]]",
+    "workspaceApiVerson": "[providers('Microsoft.Security','workspaceSettings').apiVersions[0]]",
+    "autoProvisioningApiVerson": "[providers('Microsoft.Security','autoProvisioningSettings').apiVersions[0]]",
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "[variables('pricingsApiVersion')]",
+      "name": "default",
+      "properties": {
+        "pricingTier": "[parameters('pricingTier')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "[variables('pricingsApiVersion')]",
+      "name": "SqlServers",
+      "properties": {
+        "pricingTier": "[parameters('pricingTier')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "[variables('pricingsApiVersion')]",
+      "name": "AppServices",
+      "properties": {
+        "pricingTier": "[parameters('pricingTier')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/SqlServers')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "[variables('pricingsApiVersion')]",
+      "name": "VirtualMachines",
+      "properties": {
+        "pricingTier": "[parameters('pricingTier')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/AppServices')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "[variables('pricingsApiVersion')]",
+      "name": "StorageAccounts",
+      "properties": {
+        "pricingTier": "[parameters('pricingTier')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/VirtualMachines')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Security/workspaceSettings",
+      "apiVersion": "[variables('workspaceApiVerson')]",
+      "name": "default",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "scope": "[subscription().id]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/autoProvisioningSettings",
+      "name": "default",
+      "apiVersion": "[variables('autoProvisioningApiVerson')]",
+      "properties": {
+        "autoProvision": "[parameters('autoProvisioning')]"
+      }
+    }
+  ],
+  "outputs": {}
+}

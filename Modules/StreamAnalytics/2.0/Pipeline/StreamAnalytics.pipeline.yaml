@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: StreamAnalytics.pipeline.variables.yaml
+- template: StreamAnalytics.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/StreamAnalytics/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: StreamAnalytics.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: StreamAnalytics.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: StreamAnalytics.pipeline.deploy.yaml

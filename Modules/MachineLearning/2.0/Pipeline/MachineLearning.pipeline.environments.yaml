@@ -1,0 +1,30 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    resourceGroup_aml: RG-DEV-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    resourceGroup_aml: RG-SIT-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    resourceGroup_aml: RG-UAT-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    resourceGroup_aml: RG-PRD-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+    akv: prd-akv-001

@@ -1,0 +1,79 @@
+parameters:
+  moduleName: ApplicationSecurityGroups
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
+  artifactName: $(artifactName)
+  connectionService: $(connectionService)
+  secretsFilter: $(secretsFilter)
+  resourceGroup: $(resourceGroup)
+  environment: $(environment)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
+  overrideParameters: $(overrideParameters) 
+  dependsOn: ''
+  condition: ''
+
+jobs:
+  - deployment:
+    displayName: 'Deploy Module ${{ parameters.moduleName }}'
+    pool:
+      name: $(poolName)
+    dependsOn: '${{ parameters.dependsOn }}'
+    condition: '${{ parameters.condition }}'
+    environment: '${{ parameters.environment }}'
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: '${{ parameters.artifactName }}'
+              downloadPath: $(System.ArtifactsDirectory)
+
+          - task: AzureKeyVault@1
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              KeyVaultName: $(AKV)
+              SecretsFilter: 'KeyVault--Name'
+
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Deploy ${{ parameters.moduleName }}'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              resourceGroupName: '${{ parameters.resourceGroup }}'
+              location: '${{ parameters.location }}'
+              csmFile: '${{ parameters.templateFile }}'
+              csmParametersFile: '${{ parameters.parametersFile }}'
+              overrideParameters: '${{ parameters.overrideParameters }}'
+              deploymentMode: Incremental
+              deploymentOutputs: ResourceGroupDeploymentOutputs
+
+          - task: PowerShell@2
+            inputs:
+              targetType: 'inline'
+              script: |
+                $outputs = ConvertFrom-Json $($env:ResourceGroupDeploymentOutputs)
+                foreach ($output in $outputs.PSObject.Properties) {
+                  Write-Host "##vso[task.setvariable variable=$($output.Name)]$($output.Value.value)"
+                }
+
+          - task: AzurePowerShell@4
+            displayName: 'Test - ${{ parameters.moduleName }} Parameters'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
+              scriptarguments: '-applicationSecurityGroupName "$(applicationSecurityGroupName)" -applicationSecurityGroupResourceId "$(applicationSecurityGroupResourceId)" -applicationSecurityGroupResourceGroup "$(applicationSecurityGroupResourceGroup)"'
+              azurePowerShellVersion: LatestVersion
+     
+          - task: AzurePowerShell@4
+            displayName: 'Configuration - Add ${{ parameters.moduleName }} Secrets to KeyVault'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
+              scriptarguments: '-keyVaultName "$(KeyVault--Name)" -applicationSecurityGroupName "$(applicationSecurityGroupName)" -applicationSecurityGroupResourceId "$(applicationSecurityGroupResourceId)" -applicationSecurityGroupResourceGroup "$(applicationSecurityGroupResourceGroup)"'
+              azurePowerShellVersion: LatestVersion

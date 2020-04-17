@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: ApplicationSecurityGroups.pipeline.variables.yaml
+- template: ApplicationSecurityGroups.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/ApplicationSecurityGroups/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: ApplicationSecurityGroups.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: ApplicationSecurityGroups.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: ApplicationSecurityGroups.pipeline.deploy.yaml

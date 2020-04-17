@@ -1,0 +1,15 @@
+variables:
+  moduleName: AppServices
+  moduleVersion: 2.0
+  moduleTier: Modules
+  moduleSolutionName: AppServices_2.0
+  modulePath: $(moduleTier)/$(moduleName)/$(moduleVersion)
+
+  artifactName: Artifacts
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  location: Southeast Asia
+  poolName: Hosted VS2017
+
+  templateFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleTier)/$(moduleName)/$(moduleVersion)/$(moduleName).deploy.json'
+  parametersFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleTier)/$(moduleName)/$(moduleVersion)/$(moduleName).parameters.$(environment).json'

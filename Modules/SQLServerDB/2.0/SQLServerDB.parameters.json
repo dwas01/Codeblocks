@@ -1,0 +1,95 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "value": "$(sqlServerName)"
+    },
+    "sqlAdministratorLogin": {
+      "value": "$(sqlAdministratorLogin)"
+    },
+    "sqlAdministratorLoginPassword": {
+      "value": "$(sqlAdministratorLoginPassword)"
+    },
+    "sqlDatabasesNames": {
+      "value": [
+        {
+          "databaseName": "$(databaseName)"
+        }
+      ]
+    },
+    "firewallVnetRuleList": {
+      "value": [
+        {
+          "virtualNetworkSubscription": "$(virtualNetworkSubscription)",
+          "virtualNetworkResourceGroup": "$(virtualNetworkResourceGroup)",
+          "virtualNetworkName": "$(virtualNetworkName)",
+          "subnetName": "$(subnetName)"
+        }
+      ]
+    },
+    "firewallruleList": {
+      "value": [
+        {
+          "Name": "AllowAllWindowsAzureIps",
+          "StartIpAddress": "0.0.0.0",
+          "EndIpAddress": "0.0.0.0"
+        }
+      ]
+    },
+    "diagnosticStorageAccountAccessKey": {
+      "type": "string",
+      "value": "$(diagnosticStorageAccountAccessKey)"
+    },
+    "skuName": {
+      "value": [
+        {
+          "Name": "S0"
+        }
+      ]
+    },
+    "skuTier": {
+      "value": [
+        {
+          "Tier": "Standard"
+        }
+      ]
+    },
+    "retentionDays": {
+      "value": 30
+    },
+    "diagnosticStorageAccountName": {
+      "value": "$(storageAccountName)"
+    },
+    "diagnosticStorageAccountId": {
+      "value": "$(storageAccountResourceId)"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "$(logAnalyticsWorkspaceId)"
+    },
+    "logsRetentionInDays": {
+      "value": 330
+    },
+    "sqlServerActiveDirectoryGroupName": {
+      "value": "$(sqlServerActiveDirectoryGroupName)"
+    },
+    "sqlServerActiveDirectoryGroupId": {
+      "value": "$(sqlServerActiveDirectoryGroupId)"
+    },
+    "sqlServerTenantId": {
+      "value": "$(sqlServerTenantId)"
+    },
+     "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

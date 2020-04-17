@@ -1,0 +1,12 @@
+variables:
+  moduleName: StreamAnalytics
+  moduleVersion: 2.0
+  moduleTier: Modules
+  moduleSolutionName: StreamAnalytics_2.0
+  modulePath: $(moduleTier)/$(moduleName)/$(moduleVersion)
+
+  artifactName: Artifacts
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  location: Southeast Asia
+  poolName: Hosted VS2017

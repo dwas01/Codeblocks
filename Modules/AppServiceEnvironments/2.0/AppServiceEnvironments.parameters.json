@@ -1,0 +1,66 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "aseName": {
+      "value": "$(aseName)"
+    },
+    "dnsSuffix": {
+      "value": "p.azurewebsites.net"
+    },
+    "appInsightsKey": {
+      "value": "$(appInsightsKey)"
+    },
+    "webServicePlanName": {
+      "value": "$(webServicePlanName)"
+    },
+    "webAppPortalName": {
+      "value": "$(webAppPortalName)"
+    },
+    "webWorkerPool": {
+      "value": "1"
+    },
+    "webWorkers": {
+      "value": 2
+    },
+    "vnetResourceName": {
+      "value": "$(vnetResourceName)"
+    },
+    "vnetResourceGroupName": {
+      "value": "$(vnetResourceGroupName)"
+    },
+    "subnetName": {
+      "value": "$(subnetName)"
+    },
+    "minimumCapacityProfile": {
+      "value": 2
+    },
+    "maximumCapacityProfile": {
+      "value": 10
+    },
+    "defaultCapacityProfile": {
+      "value": 5
+    },
+    "diagnosticStorageAccountId": {
+      "value": "$(diagnosticStorageAccountId)"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "$(logAnalyticsWorkspaceId)"
+    },
+    "logsRetentionInDays": {
+      "value": 30
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

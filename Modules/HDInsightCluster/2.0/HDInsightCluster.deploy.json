@@ -1,0 +1,237 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The name of the HDInsight cluster"
+      }
+    },
+    "clusterLoginUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. These credentials can be used to submit jobs to the cluster and to log into cluster dashboards"
+      }
+    },
+    "clusterLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Required. The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter"
+      }
+    },
+    "clusterType": {
+      "type": "string",
+      "allowedValues": [
+        "hadoop",
+        "hbase",
+        "storm",
+        "spark"
+      ],
+      "defaultValue": "hadoop",
+      "metadata": {
+        "description": "Optional. The type of the HDInsight cluster to create"
+      }
+    },
+    "clusterKind": {
+      "type": "string",
+      "defaultValue": "HADOOP",
+      "metadata": {
+        "description": "Optional. The kind of the HDInsight cluster to create"
+      }
+    },
+    "clusterVersion": {
+      "type": "string",
+      "defaultValue": "3.6",
+      "metadata": {
+        "description": "Optional. HDInsight cluster version"
+      }
+    },
+    "sshUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. These credentials can be used to remotely access the cluster"
+      }
+    },
+    "sshPublicKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Required. The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter"
+      }
+    },
+    "clusterWorkerNodeCount": {
+      "type": "int",
+      "defaultValue": 4,
+      "metadata": {
+        "description": "Optional. The number of nodes in the HDInsight cluster"
+      }
+    },
+    "clusterStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The name of the Azure storage account"
+      }
+    },
+    "filesystem": {
+      "type": "string",
+      "defaultValue": "defaultfilesystem",
+      "metadata": {
+        "description": "Optional. The filesystem, only to be specified for Azure Data Lake Storage type Gen 2"
+      }
+    },
+    "storageaccountResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of the Cluster Storage Account"
+      }
+    },
+    "managedIdentityResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of the Cluster Managed Identity"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Optional. Location for all Resources"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Azure Resource Tags object"
+      }
+    }
+  },
+  "variables": {
+    "hdInsightClusterName": "[parameters('clusterName')]",
+    "hdInsightClusterResourceId": "[resourceId('Microsoft.HDInsight/clusters',variables('hdInsightClusterName'))]",
+    "hdInsightClusterApiVersion": "[providers('Microsoft.HDInsight','clusters').apiVersions[0]]",
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.HDInsight/clusters",
+      "apiVersion": "[variables('hdInsightClusterApiVersion')]",
+      "name": "[variables('hdInsightClusterName')]",
+      "location": "[parameters('location')]",
+      "tags": "[if(empty(parameters('tagValues')), json('null'), parameters('tagValues'))]",
+      "properties": {
+        "clusterVersion": "[parameters('clusterVersion')]",
+        "osType": "Linux",
+        "clusterDefinition": {
+          "kind": "[parameters('clusterKind')]",
+          "configurations": {
+            "gateway": {
+              "restAuthCredential.isEnabled": true,
+              "restAuthCredential.username": "[parameters('clusterLoginUserName')]",
+              "restAuthCredential.password": "[parameters('clusterLoginPassword')]"
+            }
+          }
+        },
+        "storageProfile": {
+          "storageaccounts": [
+            {
+              "name": "[concat(parameters('clusterStorageAccountName'),'.blob.core.windows.net')]",
+              "isDefault": true,
+              "fileSystem": "[parameters('fileSystem')]",
+              "container": "[parameters('clusterName')]",
+              "resourceId": "[parameters('storageaccountResourceId')]",
+              "msiResourceId": "[parameters('managedIdentityResourceId')]"
+            }
+          ]
+        },
+        "computeProfile": {
+          "roles": [
+            {
+              "name": "headnode",
+              "targetInstanceCount": 2,
+              "hardwareProfile": {
+                "vmSize": "Standard_D12_V2"
+              },
+              "osProfile": {
+                "linuxOperatingSystemProfile": {
+                  "username": "[parameters('sshUserName')]",
+                  "sshProfile": {
+                    "publicKeys": [
+                      {
+                        "certificateData": "[parameters('sshPublicKey')]"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "name": "workernode",
+              "targetInstanceCount": "[parameters('clusterWorkerNodeCount')]",
+              "hardwareProfile": {
+                "vmSize": "Standard_D3"
+              },
+              "osProfile": {
+                "linuxOperatingSystemProfile": {
+                  "username": "[parameters('sshUserName')]",
+                  "sshProfile": {
+                    "publicKeys": [
+                      {
+                        "certificateData": "[parameters('sshPublicKey')]"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": []
+    }
+  ],
+  "outputs": {
+    "hdInsightClusterName": {
+      "type": "string",
+      "value": "[variables('hdInsightClusterName')]",
+      "metadata": {
+        "description": "The Name of the HDInsight Cluster"
+      }
+    },
+    "hdInsightClusterResourceId": {
+      "type": "string",
+      "value": "[variables('hdInsightClusterResourceId')]",
+      "metadata": {
+        "description": "The Resource Id of the  HDInsights Cluster"
+      }
+    },
+    "hdInsightClusterResourceGroup": {
+      "type": "string",
+      "value": "[resourceGroup().name]",
+      "metadata": {
+        "description": "The name of the Resource Group with the HDInsight Cluster"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+variables:
+  pipelineName: CoreServices
+  pipelineVersion: 2.0
+
+  artifactName:  Artifacts
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  location: Southeast Asia
+  poolName: Hosted VS2017
+
+  templateFile_akv: '$(System.ArtifactsDirectory)/$(artifactName)/KeyVault_2.0/KeyVault.deploy.json'
+  parametersFile_akv: '$(System.ArtifactsDirectory)/$(artifactName)/KeyVault_2.0/KeyVault.parameters.$(environment).json'
+
+  templateFile_mon: '$(System.ArtifactsDirectory)/$(artifactName)/LogAnalytics_2.0/LogAnalytics.deploy.json'
+  parametersFile_mon: '$(System.ArtifactsDirectory)/$(artifactName)/LogAnalytics_2.0/LogAnalytics.parameters.$(environment).json'
+
+  templateFile_sta: '$(System.ArtifactsDirectory)/$(artifactName)/StorageAccounts_2.0/StorageAccounts.deploy.json'
+  parametersFile_sta: '$(System.ArtifactsDirectory)/$(artifactName)/StorageAccounts_2.0/StorageAccounts.parameters.$(environment).json'
+
+

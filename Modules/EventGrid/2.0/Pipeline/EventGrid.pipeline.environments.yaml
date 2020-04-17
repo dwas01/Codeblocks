@@ -1,0 +1,32 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    SecretsFilter: 'KeyVault--Name--$(akv)'    
+    resourceGroup_evg: RG-DEV-APP
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    SecretsFilter: 'KeyVault--Name--$(akv)'    
+    resourceGroup_evg: RG-SIT-APP
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    SecretsFilter: 'KeyVault--Name--$(akv)'    
+    resourceGroup_evg: RG-UAT-APP
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    SecretsFilter: 'KeyVault--Name--$(akv)'    
+    resourceGroup_evg: RG-PRD-APP
+    connectionService: azure-spn
+    overrideParameters: ''    
+    akv: prd-akv-001

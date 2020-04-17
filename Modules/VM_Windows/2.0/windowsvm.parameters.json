@@ -1,0 +1,117 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Environment": {
+      "value": "Development"
+    },
+    "virtualMachineResourceGroup": {
+      "value": null
+    },
+    "virtualMachineName": {
+      "value": null
+    },
+    "availability_set_name": {
+      "value": null
+    },
+    "virtualNetworkResourceGroup": {
+      "value": null
+    },
+    "virtualNetworkName": {
+      "value": null
+    },
+    "subnetName": {
+      "value": null
+    },
+    "virtualMachineSize": {
+      "value": "Standard_D2_v3"
+    },
+    "windowsOSVersion": {
+      "value": "2016-Datacenter-smalldisk"
+    },
+    "adminUsername": {
+      "value": null
+    },
+    "adminPassword": {
+      "value": null
+    },
+    "vmDataDiskSizeGB": {
+      "value": 80
+    },
+    "domainToJoin": {
+      "value": "Your.Domain.com"
+    },
+    "ouPath": {
+      "value": "OU=windows; DC=Your; DC=Domain; DC=com"
+    },
+    "domainUsername": {
+      "value": null
+    },
+    "domainPassword": {
+      "value": null
+    },
+    "backupVaultResourceGroup": {
+      "value": null
+    },
+    "backupVaultName": {
+      "value": null
+    },
+    "backupPolicyName": {
+      "value": null
+    },
+    "workspaceId": {
+      "value": null
+    },
+    "workspaceKey": {
+      "value": null
+    },
+    "TemplateStoreReourceGroup": {
+      "value": null
+    },
+    "TemplateStore": {
+      "value": null
+    },
+    "TemplateStoreKey": {
+      "value": null
+    },
+    "diagnosticStorageAccountResourceGroup": {
+      "value": null
+    },
+    "diagnosticStorageAccountName": {
+      "value": null
+    },
+    "eventHubAuthorizationRuleId": {
+      "value": "/subscriptions/<Your Subscription ID>/resourcegroups/<Your Event Hub Resource Group>/providers/Microsoft.EventHub/namespaces/<Your Event Hub Namespace>/AuthorizationRules/RootManageSharedAccessKey"
+    },
+    "eventHubName": {
+      "value": null
+    },
+    "tagApplication": {
+      "value": null
+    },
+    "tagAppID": {
+      "value": null
+    },
+    "tagVersion": {
+      "value": "0"
+    },
+    "tagDataClassification": {
+      "value": "Public"
+    },
+    "tagRole": {
+      "value": null
+    },
+    "tagSupportOwner": {
+      "value": "OPS@YourDomain.com"
+    },
+    "tagBusinessOwner": {
+      "value": "businessOwner@YourDomain.com"
+    },
+    "tagCostCenter": {
+      "value": null
+    },
+    "tagEndDate": {
+      "value": null
+    }
+  }
+}

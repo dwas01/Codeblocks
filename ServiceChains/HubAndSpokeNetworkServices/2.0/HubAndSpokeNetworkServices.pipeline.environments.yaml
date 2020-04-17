@@ -1,0 +1,36 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    connectionService: azure-spn
+    akv: dev-akv-001    
+
+    resourceGroup_nsg: RG-DEV-SHD
+    secretsFilter_nsg: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    overrideParameters_nsg: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+
+    resourceGroup_net: RG-DEV-SHD
+    secretsFilter_net: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    overrideParameters_net: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+
+    resourceGroup_vnp: RG-DEV-SHD
+    secretsFilter_vnp: 'VirtualNetwork--Name--<ResourceNameHere>,VirtualNetwork--Name--<ResourceNameHere>,VirtualNetwork--ResourceId--<ResourceNameHere>,VirtualNetwork--ResourceId--<ResourceNameHere>'
+    overrideParameters_vnp_hub2spoke01: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)" -localvNetName "$(VirtualNetwork--Name--<ResourceNameHere>)"'
+    overrideParameters_vnp_spoke012hub: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)" -localvNetName "$(VirtualNetwork--Name--<ResourceNameHere>)"'
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    connectionService: azure-spn
+    akv: prd-akv-001
+
+    resourceGroup_nsg: RG-PRD-SHD
+    secretsFilter_nsg: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'    
+    overrideParameters_nsg: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+
+    resourceGroup_net: RG-PRD-SHD
+    secretsFilter_net: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    overrideParameters_net: '-diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'
+
+    resourceGroup_vnp: RG-PRD-SHD
+    secretsFilter_vnp: 'VirtualNetwork--Name--<ResourceNameHere>,VirtualNetwork--Name--<ResourceNameHere>,VirtualNetwork--ResourceId--<ResourceNameHere>,VirtualNetwork--ResourceId--<ResourceNameHere>'
+    overrideParameters_vnp_hub2spoke01: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)" -localvNetName "$(VirtualNetwork--Name--<ResourceNameHere>)"'
+    overrideParameters_vnp_spoke012hub: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)" -localvNetName "$(VirtualNetwork--Name--<ResourceNameHere>)"'

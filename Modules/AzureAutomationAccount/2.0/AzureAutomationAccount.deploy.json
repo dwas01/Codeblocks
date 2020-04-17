@@ -1,0 +1,201 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "automationAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The name of the Azure Automation Account"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Optional. Location for all Resources"
+      }
+    },
+    "credentialsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The credentials name of the Azure Automation Account"
+      }
+    },
+    "userName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The user name of the Azure Automation Account"
+      }
+    },
+    "password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Required. The password of the of the Azure Automation Account"
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "metadata": {
+        "description": "Optional. The sku name of the Azure Automation Account"
+      }
+    },
+    "diagnosticStorageAccountId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of the Diagnostic Storage Account"
+      }
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Reguired. Resource identifier of Log Analytics Workspace"
+      }
+    },
+    "logsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 0,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for, a value of 0 will retain data indefinitely"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Azure Resource Tags object"
+      }
+    }
+  },
+  "variables": {
+    "automationAccountName": "[parameters('automationAccountName')]",
+    "automationAccountResourceId": "[resourceId('Microsoft.Automation/automationAccounts',variables('automationAccountName'))]",
+    "automationAccountApiVersion": "[providers('Microsoft.Automation','automationAccounts').apiVersions[0]]",
+    "diagnosticSettingName": "[concat(variables('automationAccountName'), '/','Microsoft.Insights/service')]",
+    "diagnosticStorageAccountId": "[parameters('diagnosticStorageAccountId')]",
+    "diagnosticWorkspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "[variables('automationAccountApiVersion')]",
+      "name": "[variables('automationAccountName')]",
+      "location": "[parameters('location')]",
+      "tags": "[if(empty(parameters('tagValues')), json('null'), parameters('tagValues'))]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('skuName')]"
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Automation/automationAccounts/providers/diagnosticsettings",
+          "apiVersion": "2016-09-01",
+          "name": "[variables('diagnosticSettingName')]",
+          "dependsOn": [
+            "[variables('automationAccountResourceId')]"
+          ],
+          "properties": {
+            "storageAccountId": "[variables('diagnosticStorageAccountId')]",
+            "workspaceId": "[variables('diagnosticWorkspaceId')]",
+            "logs": [
+              {
+                "category": "JobLogs",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": true,
+                  "days": "[parameters('logsRetentionInDays')]"
+                }
+              },
+              {
+                "category": "JobStreams",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": true,
+                  "days": "[parameters('logsRetentionInDays')]"
+                }
+              },
+              {
+                "category": "DscNodeStatus",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": true,
+                  "days": "[parameters('logsRetentionInDays')]"
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": "[parameters('logsRetentionInDays')]",
+                  "enabled": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/credentials",
+      "apiVersion": "[variables('automationAccountApiVersion')]",
+      "name": "[concat(parameters('automationAccountName'), '/', parameters('credentialsName'))]",
+      "dependsOn": [
+        "[variables('automationAccountResourceId')]"
+      ],
+      "properties": {
+        "userName": "[parameters('userName')]",
+        "password": "[parameters('password')]"
+      }
+    }
+  ],
+  "outputs": {
+    "automationAccountName": {
+      "type": "string",
+      "value": "[variables('automationAccountName')]",
+      "metadata": {
+        "description": "The name of the Azure Automation Account"
+      }
+    },
+    "automationAccountResourceId": {
+      "type": "string",
+      "value": "[variables('automationAccountResourceId')]",
+      "metadata": {
+        "description": "The Resource Id of the Azure Automation Account"
+      }
+    },
+    "automationAccountResourceGroup": {
+      "type": "string",
+      "value": "[resourceGroup().name]",
+      "metadata": {
+        "description": "The name of the Resource Group with the Azure automation Account"
+      }
+    }
+  }
+}

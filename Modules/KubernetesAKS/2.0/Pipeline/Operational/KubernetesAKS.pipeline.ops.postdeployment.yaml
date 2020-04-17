@@ -1,0 +1,26 @@
+name: $(moduleName)-$(moduleVersion)-PostDeployment
+
+variables:
+- template: KubernetesAKS.pipeline.ops.postdeployment.variables.yaml
+- template: KubernetesAKS.pipeline.ops.postdeployment.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - Modules/KubernetesAKS/2.0/Pipeline/Operational
+
+stages:
+- stage: Build
+  jobs:
+  - template: KubernetesAKS.pipeline.ops.postdeployment.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: KubernetesAKS.pipeline.ops.postdeployment.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: KubernetesAKS.pipeline.ops.postdeployment.deploy.yaml

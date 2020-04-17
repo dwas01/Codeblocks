@@ -1,0 +1,36 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    SecretsFilter: 'Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>,LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--Name--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    scriptargumentsSQLPwd: '-keyVaultName "$(akv)" -keyVaultSecret "$(Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>)"'    
+    resourceGroup_sdb: RG-DEV-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountName "$(StorageAccount--Name--<ResourceNameHere>)" -diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'    
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    SecretsFilter: 'Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>,LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--Name--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    scriptargumentsSQLPwd: '-keyVaultName "$(akv)" -keyVaultSecret "$(Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>)"'    
+    resourceGroup_sdb: RG-SIT-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountName "$(StorageAccount--Name--<ResourceNameHere>)" -diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'    
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    SecretsFilter: 'Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>,LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--Name--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    scriptargumentsSQLPwd: '-keyVaultName "$(akv)" -keyVaultSecret "$(Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>)"'    
+    resourceGroup_sdb: RG-UAT-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountName "$(StorageAccount--Name--<ResourceNameHere>)" -diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'    
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    SecretsFilter: 'Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>,LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--Name--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    scriptargumentsSQLPwd: '-keyVaultName "$(akv)" -keyVaultSecret "$(Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>)"'    
+    resourceGroup_sdb: RG-PRD-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountName "$(StorageAccount--Name--<ResourceNameHere>)" -diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'    
+    akv: prd-akv-001

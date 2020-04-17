@@ -1,0 +1,58 @@
+parameters:
+  moduleName: RecoveryServicesVaults
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
+  artifactName: $(artifactName)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)  
+
+jobs:
+  - job: 'BuildModule_${{ parameters.moduleName }}'
+    displayName: 'Test and Build ${{ parameters.moduleName }}'
+    pool:
+      name: $(poolName)
+    workspace:
+      clean: all
+    steps:
+    - task: PowerShell@2
+      displayName: Test Module ${{ parameters.moduleName }} (Pester)
+      inputs:
+        targetType: inline
+        script: |
+          Install-Module Pester -Force -ErrorAction Stop
+
+          Write-Output "Template: ${{ parameters.templateFile }}"
+          Write-Output "Parameters: ${{ parameters.parametersFile }}"
+
+          $PesterSettings  = @{
+            Script       = "$(System.DefaultWorkingDirectory)/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Tests/${{ parameters.moduleName }}.module.tests.ps1"
+            OutputFile   = "$(System.DefaultWorkingDirectory)/Test-Pester.XML"
+            OutputFormat = "NUnitXml"
+            EnableExit   = $true
+            Verbose      = $true
+          }
+
+          Invoke-Pester @PesterSettings
+          
+    - task: PublishTestResults@2
+      displayName: Publish Test Results
+      inputs:
+        testResultsFormat: NUnit
+        testResultsFiles: $(System.DefaultWorkingDirectory)/Test-Pester.XML
+        mergeTestResults: true
+        testRunTitle: 'Build - Pester Unit Tests'
+      continueOnError: true        
+
+    - task: CopyFiles@2
+      displayName: Filter folders
+      inputs:
+        Contents: |
+          ${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/**
+        targetFolder: $(Build.ArtifactStagingDirectory)
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: '${{ parameters.artifactName }}'
+        publishLocation: 'Container'

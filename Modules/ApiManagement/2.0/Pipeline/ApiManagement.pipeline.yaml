@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: ApiManagement.pipeline.variables.yaml
+- template: ApiManagement.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/ApiManagement/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: ApiManagement.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: ApiManagement.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: ApiManagement.pipeline.deploy.yaml

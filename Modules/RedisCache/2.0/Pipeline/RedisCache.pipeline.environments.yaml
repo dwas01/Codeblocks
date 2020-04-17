@@ -1,0 +1,28 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    resourceGroup_rch: RG-DEV-APP
+    connectionService: azure-spn
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    resourceGroup_rch: RG-SIT-APP
+    connectionService: azure-spn
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    resourceGroup_rch: RG-UAT-APP
+    connectionService: azure-spn
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    secretsFilter: 'LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>'
+    resourceGroup_rch: RG-PRD-APP
+    connectionService: azure-spn
+    akv: prd-akv-001

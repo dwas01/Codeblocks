@@ -1,0 +1,33 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: RecoveryServicesVaults.pipeline.variables.yaml
+- template: RecoveryServicesVaults.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+trigger:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - Modules/RecoveryServicesVaults/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: RecoveryServicesVaults.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: RecoveryServicesVaults.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: RecoveryServicesVaults.pipeline.deploy.yaml

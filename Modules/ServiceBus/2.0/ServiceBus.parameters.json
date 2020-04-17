@@ -1,0 +1,36 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceBusNamespaceName": {
+      "value": "$(serviceBusNamespaceName)"
+    },
+    "serviceBusTopicName": {
+      "value": "$(serviceBusTopicName)"
+    },
+    "sendListenSASKeyName": {
+      "value": "$sendListenSASKeyName)"
+    },
+    "diagnosticStorageAccountId": {
+      "value": "$(diagnosticStorageAccountId)"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "$(logAnalyticsWorkspaceId)"
+    },
+    "logsRetentionInDays": {
+      "value": 30
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

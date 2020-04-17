@@ -1,0 +1,24 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    resourceGroup_asa: RG-DEV
+    connectionService: azure-spn
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    resourceGroup_asa: RG-SIT
+    connectionService: azure-spn
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    resourceGroup_asa: RG-UAT
+    connectionService: azure-spn
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    resourceGroup_asa: RG-PRD
+    connectionService: azure-spn
+    akv: prd-akv-001

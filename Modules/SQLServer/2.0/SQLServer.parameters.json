@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "value": "$(sqlServerName)"
+    },
+    "sqlAdministratorLogin": {
+      "value": "$(sqlAdministratorLogin)"
+    },
+    "sqlAdministratorLoginPassword": {
+      "value": "$(sqlAdministratorLoginPassword)"
+    },
+    "firewallVnetRuleList": {
+      "value": [
+        {
+          "virtualNetworkSubscription": "$(Subscription)",
+          "virtualNetworkResourceGroup": "$(ResourceGroup)",
+          "virtualNetworkName": "$(NetworkName)",
+          "subnetName": "$(subnetName)"
+        }
+      ]
+    },
+    "firewallruleList": {
+      "value": [
+        {
+          "Name": "rule1",
+          "StartIpAddress": "0.0.0.0",
+          "EndIpAddress": "255.255.255.255"
+        },
+        {
+          "Name": "rule2",
+          "StartIpAddress": "0.0.0.0",
+          "EndIpAddress": "255.255.255.255"
+        }
+      ]
+    },
+    "diagnosticStorageAccountName": {
+      "value": "$(diagnosticStorageAccountName)"
+    },
+    "diagnosticStorageAccountAccessKey": {
+      "value": "$(diagnosticStorageAccountAccessKey)"
+    },
+    "retentionDays": {
+      "value": 30
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

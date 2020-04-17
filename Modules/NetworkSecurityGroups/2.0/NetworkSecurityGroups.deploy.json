@@ -1,0 +1,151 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSecurityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The name of the Network Security Group"
+      }
+    },
+    "networkSecurityGroupSecurityRules": {
+      "type": "array",
+      "metadata": {
+        "description": "Required. Array of Security Rules to deploy to the Network Security Group"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Optional. Location of the Network Security Group"
+      }
+    },
+    "diagnosticStorageAccountId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of the Diagnostic Storage Account"
+      }
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of Log Analytics Workspace"
+      }
+    },
+    "logsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 0,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Azure Resource Tags object"
+      }
+    }
+  },
+  "variables": {
+    "networkSecurityGroupsName": "[parameters('networkSecurityGroupName')]",
+    "networkSecurityGroupsResourceId": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupsName'))]",
+    "networkSecurityGroupsApiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
+    "diagnosticSettingName": "[concat(variables('networkSecurityGroupsName'),'/','Microsoft.Insights/service')]",
+    "diagnosticStorageAccountId": "[parameters('diagnosticStorageAccountId')]",
+    "diagnosticWorkspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "name": "[variables('networkSecurityGroupsName')]",
+      "location": "[parameters('location')]",
+      "tags": "[if(empty(parameters('tagValues')), json('null'), parameters('tagValues'))]",
+      "properties": {
+        "securityRules": "[parameters('networkSecurityGroupSecurityRules')]"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings",
+          "apiVersion": "2017-05-01-preview",
+          "name": "[variables('diagnosticSettingName')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[variables('networkSecurityGroupsResourceId')]"
+          ],
+          "properties": {
+            "storageAccountId": "[variables('diagnosticStorageAccountId')]",
+            "workspaceId": "[variables('diagnosticWorkspaceId')]",
+            "logs": [
+              {
+                "category": "NetworkSecurityGroupEvent",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": "[parameters('logsRetentionInDays')]",
+                  "enabled": true
+                }
+              },
+              {
+                "category": "NetworkSecurityGroupRuleCounter",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": "[parameters('logsRetentionInDays')]",
+                  "enabled": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "networkSecurityGroupsName": {
+      "type": "string",
+      "value": "[variables('networkSecurityGroupsName')]",
+      "metadata": {
+        "description": "The Network Security Group Name"
+      }
+    },
+    "networkSecurityGroupsResourceId": {
+      "type": "string",
+      "value": "[variables('networkSecurityGroupsResourceId')]",
+      "metadata": {
+        "description": "The Resource Id of the Network Security Group"
+      }
+    },
+    "networkSecurityGroupsResourceGroup": {
+      "type": "string",
+      "value": "[resourceGroup().name]",
+      "metadata": {
+        "description": "The name of the Resource Group with the Network Security Group"
+      }
+    }
+  }
+}

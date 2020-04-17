@@ -1,0 +1,156 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "databasesNames": {
+      "type": "array",
+      "metadata": {
+        "description": "Reguired. SQL databases names to be created"
+      }
+    },
+    "skuName": {
+      "type": "array",
+      "defaultValue": "S1",
+      "metadata": {
+        "description": "Optional. Name of the SQL Databse sku"
+      }
+    },
+    "skuTier": {
+      "type": "array",
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "Optional. Name of the SQL Database tier"
+      }
+    },
+    "collation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": {
+        "description": "Optional. The collation of the database"
+      }
+    },
+    "maxSizeBytes": {
+      "type": "int",
+      "defaultValue": 34359738368,
+      "metadata": {
+        "description": "Optional. The max size of the database expressed in bytes"
+      }
+    },
+    "sqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The name of the SQL server on which the database will be created"
+      }
+    },
+    "zoneRedundant": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optional. Whether or not this database is zone redundant, which means the replicas of this database will be spread across multiple availability zones"
+      }
+    },
+    "licenseType": {
+      "type": "string",
+      "defaultValue": "LicenseIncluded",
+      "metadata": {
+        "description": "Optional. The license type to apply for this database. - LicenseIncluded or BasePrice"
+      }
+    },
+    "readScale": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "metadata": {
+        "description": "Optional. If the database is a geo-secondary, readScale indicates whether read-only connections are allowed to this database or not. Enabled or Disabled"
+      }
+    },
+    "readReplicaCount": {
+      "type": "int",
+      "defaultValue": 0,
+      "metadata": {
+        "description": "Optional. Number of replicas to be created"
+      }
+    },
+    "minCapacity": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Minimal capacity that database will always have allocated, if not paused"
+      }
+    },
+    "autoPauseDelay": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Defines the period of time the database must be inactive before it is automatically paused"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Optional. Location for all Resources"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Azure Resource Tags object"
+      }
+    }
+  },
+  "variables": {
+    "databaseName": "[concat(parameters('sqlServerName'), '/', parameters('databasesNames')[copyIndex()].databaseName)]",
+    "databaseApiVersion": "[providers('Microsoft.Sql','servers/databases').apiVersions[0]]",
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "[variables('databaseApiVersion')]",
+      "name": "[variables('databaseName')]",
+      "location": "[parameters('location')]",
+      "tags": "[if(empty(parameters('tagValues')), json('null'), parameters('tagValues'))]",
+      "sku": {
+        "name": "[parameters('skuName')[copyIndex()].Name]",
+        "tier": "[parameters('skuTier')[copyIndex()].Tier]"
+      },
+      "properties": {
+        "collation": "[parameters('collation')]",
+        "maxSizeBytes": "[parameters('maxSizeBytes')]",
+        "zoneRedundant": "[parameters('zoneRedundant')]",
+        "licenseType": "[parameters('licenseType')]",
+        "readScale": "[parameters('readScale')]",
+        "readReplicaCount": "[parameters('readReplicaCount')]",
+        "minCapacity": "[parameters('minCapacity')]",
+        "autoPauseDelay": "[parameters('autoPauseDelay')]"
+      },
+      "copy": {
+        "name": "DatabaseLoop",
+        "count": "[length(parameters('databasesNames'))]"
+      }
+    }
+  ],
+  "outputs": {}
+}

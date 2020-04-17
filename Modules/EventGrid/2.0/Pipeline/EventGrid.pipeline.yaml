@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: EventGrid.pipeline.variables.yaml
+- template: EventGrid.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/EventGrid/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: EventGrid.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: EventGrid.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: EventGrid.pipeline.deploy.yaml

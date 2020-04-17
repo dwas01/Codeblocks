@@ -1,0 +1,159 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logAnalyticsWorkspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Specify Log Analytics Workspace Name"
+      }
+    },
+    "logAnalyticsRegion": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Specify the Log Analytics Region"
+      }
+    },
+    "logAnalyticsSku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Standalone",
+        "PerNode"
+      ],
+      "defaultValue": "PerNode",
+      "metadata": {
+        "description": "Optional. Specify the SKU for Log Analytics"
+      }
+    },
+    "logAnalyticsdataRetention": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 7,
+      "maxValue": 730,
+      "metadata": {
+        "description": "Optional. Specify the number of days data will be retained for"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Azure Resource Tags object"
+      }
+    }
+  },
+  "variables": {
+    "logAnalyticsName": "[parameters('logAnalyticsWorkspaceName')]",
+    "logAnalyticsResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+    "logAnalyticsApiVersion": "2015-11-01-preview",
+    "solutions": {
+      "solution": [
+        {
+          "name": "[concat('Security', '(', variables('logAnalyticsName'), ')')]",
+          "marketplaceName": "Security"
+        },
+        {
+          "name": "[concat('KeyVaultAnalytics', '(', variables('logAnalyticsName'), ')')]",
+          "marketplaceName": "KeyVaultAnalytics"
+        }
+      ]
+    },
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "[variables('logAnalyticsApiVersion')]",
+      "name": "[variables('logAnalyticsName')]",
+      "location": "[parameters('logAnalyticsRegion')]",
+      "tags": "[if(empty(parameters('tagValues')), json('null'), parameters('tagValues'))]",
+      "properties": {
+        "sku": {
+          "Name": "[parameters('logAnalyticsSku')]"
+        },
+        "retentionInDays": "[parameters('logAnalyticsdataRetention')]"
+      }
+    },
+    {
+      "type": "Microsoft.OperationsManagement/solutions",
+      "apiVersion": "[variables('logAnalyticsApiVersion')]",
+      "name": "[concat(variables('solutions').solution[copyIndex()].Name)]",
+      "location": "[parameters('logAnalyticsRegion')]",
+      "dependsOn": [
+        "[variables('logAnalyticsResourceId')]"
+      ],
+      "copy": {
+        "name": "solutionCopy",
+        "count": "[length(variables('solutions').solution)]"
+      },
+      "properties": {
+        "workspaceResourceId": "[variables('logAnalyticsResourceId')]"
+      },
+      "plan": {
+        "name": "[variables('Solutions').solution[copyIndex()].name]",
+        "product": "[concat('OMSGallery/', variables('Solutions').solution[copyIndex()].marketplaceName)]",
+        "promotionCode": "",
+        "publisher": "Microsoft"
+      }
+    }
+  ],
+  "outputs": {
+    "logAnalyticsName": {
+      "type": "string",
+      "value": "[variables('logAnalyticsName')]",
+      "metadata": {
+        "description": "The Workspace name of the Log Analytics"
+      }
+    },
+    "logAnalyticsResourceId": {
+      "type": "string",
+      "value": "[variables('logAnalyticsResourceId')]",
+      "metadata": {
+        "description": "The ResourceId of the Log Analytics"
+      }
+    },
+    "logAnalyticsResourceGroup": {
+      "type": "string",
+      "value": "[resourceGroup().name]",
+      "metadata": {
+        "description": "The name of the Resource Group with the LogAnalytics"
+      }
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName')), '2015-03-20').customerId]",
+      "metadata": {
+        "description": "The Log Analytics WorkspaceId"
+      }
+    },
+    "logAnalyticsPrimarySharedKey": {
+      "type": "string",
+      "value": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName')), '2015-03-20').primarySharedKey]",
+      "metadata": {
+        "description": "The Log Analytics Primary Shared Key"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+variables:
+  pipelineName: SpokeNetworkServices
+  pipelineVersion: 2.0
+
+  artifactName:  Artifacts
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  location: Southeast Asia
+  poolName: Hosted VS2017

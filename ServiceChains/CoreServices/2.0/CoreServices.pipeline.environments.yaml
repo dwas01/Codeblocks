@@ -1,0 +1,40 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    resourceGroup_akv: RG-DEV-AKV
+    resourceGroup_mon: RG-DEV-SHD
+    secretsFilter_mon: 'KeyVault--Name--$(akv)'    
+    resourceGroup_sta: RG-DEV-SHD
+    secretsFilter_sta: 'KeyVault--Name--$(akv)'     
+    connectionService: azure-spn
+    akv: dev-akv-001
+  
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    resourceGroup_akv: RG-SIT-AKV
+    resourceGroup_mon: RG-SIT-SHD
+    secretsFilter_mon: 'KeyVault--Name--$(akv)'     
+    resourceGroup_sta: RG-SIT-SHD
+    secretsFilter_sta: 'KeyVault--Name--$(akv)'     
+    connectionService: azure-spn
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    resourceGroup_akv: RG-UAT-AKV
+    resourceGroup_mon: RG-UAT-SHD
+    secretsFilter_mon: 'KeyVault--Name--$(akv)'     
+    resourceGroup_sta: RG-UAT-SHD
+    secretsFilter_sta: 'KeyVault--Name--$(akv)'     
+    connectionService: azure-spn
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    resourceGroup_akv: RG-PRD-AKV
+    resourceGroup_mon: RG-PRD-SHD
+    secretsFilter_mon: 'KeyVault--Name--$(akv)'     
+    resourceGroup_sta: RG-PRD-SHD
+    secretsFilter_sta: 'KeyVault--Name--$(akv)'     
+    connectionService: azure-spn
+    akv: prd-akv-001

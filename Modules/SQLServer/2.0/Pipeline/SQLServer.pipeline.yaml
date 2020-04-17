@@ -1,0 +1,26 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: SQLServer.pipeline.variables.yaml
+- template: SQLServer.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - Modules/SQLServer/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: SQLServer.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: SQLServer.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: SQLServer.pipeline.deploy.yaml

@@ -1,0 +1,17 @@
+variables:
+- name: applicationName
+  value: HubNetworkServices
+- name: applicationVersion
+  value: 0.1
+- name: applicationPath
+  value: Environments/$(ApplicationName)/$(ApplicationVersion)
+- name: applicationParametersLocation
+  value: ../../../Environments/HubNetworkServices/Parameters
+- name: location
+  value: 'West Europe'
+- name: poolName
+  value: 'Self-Hosted'
+- name: resourceGroupName
+  value: 'hcbae2h01rsgcom004'
+- name: serviceConnection
+  value: 'Fontoso (DEV)'

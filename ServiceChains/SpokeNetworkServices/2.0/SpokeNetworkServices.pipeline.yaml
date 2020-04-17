@@ -1,0 +1,47 @@
+name: $(pipelineName)-$(pipelineVersion)
+
+variables:
+- template: SpokeNetworkServices.pipeline.variables.yaml
+- template: SpokeNetworkServices.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+    - Pipelines/SpokeNetworkServices
+
+stages:
+- stage: Build
+  jobs:
+  - template: ../../../Modules/ApplicationSecurityGroups/2.0/Pipeline/ApplicationSecurityGroups.pipeline.build.yaml
+  - template: ../../../Modules/RouteTables/2.0/Pipeline/RouteTables.pipeline.build.yaml
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/NetworkSecurityGroups.Pipeline/pipeline.build.yaml
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.build.yaml
+  
+- stage: Validate
+  jobs:
+  - template: ../../../Modules/ApplicationSecurityGroups/2.0/Pipeline/ApplicationSecurityGroups.pipeline.validate.yaml
+  - template: ../../../Modules/RouteTables/2.0/Pipeline/RouteTables.pipeline.validate.yaml
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.validate.yaml
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: ../../../Modules/ApplicationSecurityGroups/2.0/Pipeline/ApplicationSecurityGroups.pipeline.deploy.yaml
+  - template: ../../../Modules/RouteTables/2.0/Pipeline/RouteTables.pipeline.deploy.yaml
+    parameters:      
+      dependsOn: Job1
+      condition: succeeded()
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.deploy.yaml
+    parameters:      
+      dependsOn: Job2
+      condition: succeeded()
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.deploy.yaml
+    parameters:      
+      dependsOn: Job3
+      condition: succeeded()

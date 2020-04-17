@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "userAssignedIdentitiesName": {
+          "type": "string",
+          "metadata": {
+            "description": "Enter User Assigned Identity Name"
+          }
+        }
+  },
+  "variables": {
+    "identityName": "[parameters('userAssignedIdentitiesName')]"
+  },  
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "name": "[variables('identityName')]",
+      "apiVersion": "2018-11-30",
+      "location": "[resourceGroup().location]"
+    }
+  ],
+  "outputs": {
+      "aksPodIdentityName": {
+        "type": "string",
+        "value": "[variables('identityName')]",
+        "metadata": {
+          "description": "The User Assigned Managed Identity Name for the Kubernetes Cluster"
+        }          
+      },
+      "aksPodIdentityResourceId": {
+        "type": "string",
+        "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]",
+        "metadata": {
+          "description": "The User Assigned Managed Identity Resource Id"
+        }          
+      },
+      "aksPodIdentityResourceGroup": {
+        "type": "string",
+        "value": "[resourceGroup().name]",
+        "metadata": {
+          "description": "The name of the Resource Group with the Managed Pod Identity"
+        }
+      }            
+  }
+}

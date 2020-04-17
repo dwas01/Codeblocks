@@ -1,0 +1,541 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Target release lifecycle environment"
+      },
+      "allowedValues": [
+        "Production",
+        "PreProduction",
+        "Quality Assurance",
+        "Development",
+        "Proof of Concept",
+        "Sandbox",
+        "Non Production",
+        "Multiple",
+        "Disaster Recovery"
+      ]
+    },
+    "virtualNetworkResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group containing the vNet for the VM"
+      }
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "The desired VNET which can communicate with a Domain Controller"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "The desired subnet defined in the VNET"
+      }
+    },
+    "virtualMachineResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "The desired Virtual Machine Resrouce Group for the deployment."
+      }
+    },
+    "virtualMachineName": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique vmName for the deployment. The fqdn will look something like '<vmName>.domain.prod'. Up to 62 chars, digits or dashes, lowercase, should start with a letter: must conform to '^[a-z][a-z0-9-]{1,61}[a-z0-9]$'."
+      }
+    },
+    "availability_set_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "virtualMachineSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2_v3",
+      "metadata": {
+        "description": "The size of the virtual machine"
+      }
+    },
+    "LinuxOSVersion": {
+      "defaultValue": "7.3",
+      "allowedValues": [
+        "7.3",
+        "7.4"
+      ],
+      "type": "string",
+      "metadata": {
+        "description": "The Redhat SKU for the virtual machine"
+      }
+    },
+    "vmDataDiskSizeGB": {
+      "defaultValue": 40,
+      "type": "int",
+      "metadata": {
+        "description": "The size of the virtual machine's data disk"
+      }
+    },
+    "rootUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator/root account for the VM. Exclusion list: 'admin','administrator,'root"
+      }
+    },
+    "rootPassword": {
+      "type": "securestring"
+    },
+    "backupVaultResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group of the Recovery services vault."
+      }
+    },
+    "backupVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "The desired Recovery services vault name to which the VM backup will be stored."
+      }
+    },
+    "backupPolicyName": {
+      "type": "string",
+      "defaultValue": "DefaultPolicy",
+      "metadata": {
+        "description": "The desired backup policy that will be applied to the VM. Default is daily backup retained for 90 days."
+      }
+    },
+    "workspaceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The desired Workspace ID is the Log Analytics Workspace ID found in the Console under Settings and Connected Sources"
+      }
+    },
+    "workspaceKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The Workspace Key is the Log Analytics Workspace Key found in the Console under Settings and Connected Sources"
+      }
+    },
+    "TemplateStoreReourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group that contains the storage account where the post provisioning scripts and templates are stored"
+      }
+    },
+    "TemplateStore": {
+      "type": "string",
+      "metadata": {
+        "description": "The storage account that contains the post provisioning scripts and templates to be applied to the VM"
+      }
+    },
+    "TemplateStoreKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The storage account key for the storage account that contains the post provisioning scripts and templates to be applied to the VM"
+      }
+    },
+    "diagnosticStorageAccountResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the daignostic storage account resource group."
+      }
+    },
+    "diagnosticstorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Storage Account in which Diagnostic Logs should be saved."
+      }
+    },
+    "eventHubAuthorizationRuleId": {
+      "type": "string",
+      "defaultValue": "/subscriptions/<Your Subscription ID>/resourcegroups/<Your Event Hub Resource Group>/providers/Microsoft.EventHub/namespaces/<Your Event Hub Namespace>/AuthorizationRules/RootManageSharedAccessKey",
+      "metadata": {
+        "description": "Resource ID of the event hub authorization rule for the Event Hubs namespace in which the event hub should be created or streamed to."
+      }
+    },
+    "eventHubName": {
+      "type": "string",
+      "defaultValue": "insights-logs-diagnostics",
+      "metadata": {
+        "description": "Optional. Name of the event hub within the namespace to which logs are streamed. Without this, an event hub is created for each log category."
+      }
+    },
+    "tagApplication": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "The name of the application."
+      }
+    },
+    "tagAppID": {
+      "defaultValue": "notspecified",
+      "type": "string",
+      "metadata": {
+        "description": "Unique identifier that maps to Business Application in CMDB"
+      }
+    },
+    "tagVersion": {
+      "defaultValue": "0",
+      "type": "string",
+      "metadata": {
+        "description": "Application version number (if applicable)"
+      }
+    },
+    "tagDataClassification": {
+      "defaultValue": "Public",
+      "allowedValues": [
+        "Public",
+        "General",
+        "Confidential",
+        "Confidential-GDPR",
+        "Highly-Confidential",
+        "Highly-Confidential-GDPR"
+      ],
+      "type": "string",
+      "metadata": {
+        "description": "Information security tag that classifies the level of sensitivity for any data stored in the Azure resource."
+      }
+    },
+    "tagRole": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Used to describe the function of a particular node (web server, database server, load balancer, etc.)"
+      }
+    },
+    "tagSupportOwner": {
+      "defaultValue": "OPS@YourDomain.com",
+      "type": "string",
+      "metadata": {
+        "description": "Group or individual responsible for the Azure resource from a support perspective."
+      }
+    },
+    "tagBusinessOwner": {
+      "defaultValue": "businessOwner@YourDomain.com",
+      "type": "string",
+      "metadata": {
+        "description": "he business owner for the application. E-mail address is a sample but it can be a user name.."
+      }
+    },
+    "tagCostCenter": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Used to designate the cost center associated with the Azure resource. Used most frequently for cost accounting measures. EX.- 123456"
+      }
+    },
+    "tagEndDate": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Expiration date of the resource. Recommended for automated alerting for unused resources."
+      }
+    }
+  },
+  "variables": {
+    "networkInterfaceName": "[concat(parameters('virtualMachineName'),'-Nic01')]",
+    "vnetId": "[resourceId(parameters('virtualNetworkResourceGroup'),'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+    "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+    "templatestoreresid": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('TemplateStoreReourceGroup'), '/providers/', 'Microsoft.Storage/storageAccounts/', parameters('TemplateStore'))]",
+    "diagstorageresid": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('diagnosticStorageAccountResourceGroup'), '/providers/', 'Microsoft.Storage/storageAccounts/', parameters('diagnosticstorageAccountName'))]",
+    "metricsresourceid": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('virtualMachineResourceGroup'), '/providers/', 'Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]",
+    "diagnosticsExtensionName": "Microsoft.Insights.VMDiagnosticsSettings",
+    "metricsclosing": "[concat('<Metrics resourceId=\"', variables('metricsresourceid'), '\"><MetricAggregation scheduledTransferPeriod=\"PT1H\"/><MetricAggregation scheduledTransferPeriod=\"PT1M\"/></Metrics></DiagnosticMonitorConfiguration></WadCfg>')]",
+    "metricscounters": "<PerformanceCounters scheduledTransferPeriod=\"PT1M\"><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\AvailableMemory\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Memory available\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentAvailableMemory\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Mem. percent available\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\UsedMemory\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Memory used\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentUsedMemory\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Memory percentage\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentUsedByCache\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Mem. used by cache\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PagesPerSec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Pages\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PagesReadPerSec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Page reads\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PagesWrittenPerSec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Page writes\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\AvailableSwap\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Swap available\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentAvailableSwap\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Swap percent available\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\UsedSwap\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Swap used\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentUsedSwap\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Swap percent used\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentIdleTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU idle time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentUserTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU user time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentNiceTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU nice time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentPrivilegedTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU privileged time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentInterruptTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU interrupt time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentDPCTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU DPC time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentProcessorTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU percentage guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentIOWaitTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU IO wait time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\BytesPerSecond\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk total bytes\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\ReadBytesPerSecond\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk read guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\WriteBytesPerSecond\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk write guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\TransfersPerSecond\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Disk transfers\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\ReadsPerSecond\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Disk reads\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\WritesPerSecond\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Disk writes\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageReadTime\" sampleRate=\"PT15S\" unit=\"Seconds\"><annotation displayName=\"Disk read time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageWriteTime\" sampleRate=\"PT15S\" unit=\"Seconds\"><annotation displayName=\"Disk write time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageTransferTime\" sampleRate=\"PT15S\" unit=\"Seconds\"><annotation displayName=\"Disk transfer time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageDiskQueueLength\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Disk queue length\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\BytesTransmitted\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Network out guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\BytesReceived\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Network in guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\PacketsTransmitted\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Packets sent\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\PacketsReceived\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Packets received\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\BytesTotal\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Network total bytes\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\TotalRxErrors\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Packets received errors\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\TotalTxErrors\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Packets sent errors\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\NetworkInterface\\TotalCollisions\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Network collisions\" locale=\"en-us\"/></PerformanceCounterConfiguration></PerformanceCounters>",
+    "metricsstart": "<WadCfg><DiagnosticMonitorConfiguration overallQuotaInMB=\"4096\"><DiagnosticInfrastructureLogs scheduledTransferPeriod=\"PT1M\" scheduledTransferLogLevelFilter=\"Warning\"/>",
+    "wadcfgx": "[concat(variables('metricsstart'), variables('metricscounters'), variables('metricsclosing'))]",
+    "v2Vm": "vm;iaasvmcontainerv2;",
+    "avSetId": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availability_set_name'))]"
+  },
+  "resources": [
+    {
+      "name": "[parameters('availability_set_name')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2018-06-01",
+      "dependsOn": [],
+      "tags": {
+        "Name": "[parameters('virtualMachineName')]",
+        "Application": "[parameters('tagApplication')]",
+        "AppID": "[parameters('tagAppID')]",
+        "Version": "[parameters('tagVersion')]",
+        "Environment": "[parameters('Environment')]",
+        "Classification": "[parameters('tagDataClassification')]",
+        "Role": "[parameters('tagRole')]",
+        "SupportOwner": "[parameters('tagSupportOwner')]",
+        "BusinessOwner": "[parameters('tagBusinessOwner')]",
+        "CostCenter": "[parameters('tagCostCenter')]",
+        "EndDate ": "[parameters('tagEndDate')]"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "name": "[variables('networkInterfaceName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-02-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "Name": "[parameters('virtualMachineName')]",
+        "Application": "[parameters('tagApplication')]",
+        "AppID": "[parameters('tagAppID')]",
+        "Version": "[parameters('tagVersion')]",
+        "Environment": "[parameters('Environment')]",
+        "Classification": "[parameters('tagDataClassification')]",
+        "Role": "[parameters('tagRole')]",
+        "SupportOwner": "[parameters('tagSupportOwner')]",
+        "BusinessOwner": "[parameters('tagBusinessOwner')]",
+        "CostCenter": "[parameters('tagCostCenter')]",
+        "EndDate ": "[parameters('tagEndDate')]"
+      },
+      "dependsOn": [],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/disks",
+      "name": "[concat(parameters('virtualMachineName'),'-datadisk1')]",
+      "apiVersion": "2018-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "Name": "[parameters('virtualMachineName')]",
+        "Application": "[parameters('tagApplication')]",
+        "AppID": "[parameters('tagAppID')]",
+        "Version": "[parameters('tagVersion')]",
+        "Environment": "[parameters('Environment')]",
+        "Classification": "[parameters('tagDataClassification')]",
+        "Role": "[parameters('tagRole')]",
+        "SupportOwner": "[parameters('tagSupportOwner')]",
+        "BusinessOwner": "[parameters('tagBusinessOwner')]",
+        "CostCenter": "[parameters('tagCostCenter')]",
+        "EndDate ": "[parameters('tagEndDate')]"
+      },
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "creationData": {
+          "createOption": "Empty"
+        },
+        "diskSizeGB": "[parameters('vmDataDiskSizeGB')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachineName')]",
+      "apiVersion": "2018-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "Name": "[parameters('virtualMachineName')]",
+        "Application": "[parameters('tagApplication')]",
+        "AppID": "[parameters('tagAppID')]",
+        "Version": "[parameters('tagVersion')]",
+        "Environment": "[parameters('Environment')]",
+        "Classification": "[parameters('tagDataClassification')]",
+        "Role": "[parameters('tagRole')]",
+        "SupportOwner": "[parameters('tagSupportOwner')]",
+        "BusinessOwner": "[parameters('tagBusinessOwner')]",
+        "CostCenter": "[parameters('tagCostCenter')]",
+        "EndDate ": "[parameters('tagEndDate')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
+        "[variables('avSetId')]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('virtualMachineName')]",
+          "adminUsername": "[parameters('rootUsername')]",
+          "adminPassword": "[parameters('rootPassword')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "RedHat",
+            "offer": "RHEL",
+            "sku": "[parameters('LinuxOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('virtualMachineName'),'-osDisk')]",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
+            }
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('virtualMachineName'),'-datadisk1')]",
+              "createOption": "Attach",
+              "managedDisk": {
+                "id": "[resourceId('Microsoft.Compute/disks/', concat(parameters('virtualMachineName'),'-datadisk1'))]"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+            }
+          ]
+        },
+        "availabilitySet": {
+          "id": "[variables('avSetId')]"
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId(parameters('diagnosticStorageAccountResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('diagnosticstorageAccountName')), '2015-06-15').primaryEndpoints['blob']]"
+          }
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('virtualMachineName'), '/Microsoft.EnterpriseCloud.Monitoring')]",
+          "apiVersion": "2015-06-15",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+            "type": "OmsAgentForLinux",
+            "typeHandlerVersion": "1.4",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "workspaceId": "[parameters('WorkspaceID')]"
+            },
+            "protectedSettings": {
+              "workspaceKey": "[parameters('WorkspaceKey')]"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('virtualMachineName'), '/LinuxDiagnostic')]",
+          "apiVersion": "2017-03-30",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "publisher": "Microsoft.OSTCExtensions",
+            "type": "LinuxDiagnostic",
+            "typeHandlerVersion": "2.3",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "StorageAccount": "[parameters('diagnosticstorageAccountName')]",
+              "xmlCfg": "[base64(variables('wadcfgx'))]"
+            },
+            "protectedSettings": {
+              "storageAccountName": "[parameters('diagnosticstorageAccountName')]",
+              "eventHubAuthorizationRuleId": "[parameters('eventHubAuthorizationRuleId')]",
+              "eventHubName": "[parameters('eventHubName')]",
+              "storageAccountKey": "[listKeys(variables('diagstorageresid'),'2015-06-15').key1]",
+              "storageAccountEndPoint": "https://core.windows.net/"
+            }
+          },
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]",
+            "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('virtualMachineName'), 'Microsoft.EnterpriseCloud.Monitoring')]"
+          ]
+        },
+        {
+          "name": "[concat(parameters('virtualMachineName'),'/', 'PostProvision')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]",
+            "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('virtualMachineName'), 'Microsoft.EnterpriseCloud.Monitoring')]",
+            "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('virtualMachineName'), 'LinuxDiagnostic')]"
+          ],
+          "tags": {
+            "Name": "[parameters('virtualMachineName')]",
+            "Application": "[parameters('tagApplication')]",
+            "AppID": "[parameters('tagAppID')]",
+            "Version": "[parameters('tagVersion')]",
+            "Environment": "[parameters('Environment')]",
+            "Classification": "[parameters('tagDataClassification')]",
+            "Role": "[parameters('tagRole')]",
+            "SupportOwner": "[parameters('tagSupportOwner')]",
+            "BusinessOwner": "[parameters('tagBusinessOwner')]",
+            "CostCenter": "[parameters('tagCostCenter')]",
+            "EndDate ": "[parameters('tagEndDate')]"
+          },
+          "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.0",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "skipDos2Unix": false,
+              "timestamp": 123456789
+            },
+            "protectedSettings": {
+              "commandToExecute": "sh ansible_prep.sh",
+              "fileUris": [
+                "https://artifacts.azure.cloud.net/artifacts/cloud-bootstrap/ansible_prep.sh"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "name": "RecoveryServicesVaultBackup",
+      "apiVersion": "2017-05-10",
+      "resourceGroup": "[parameters('backupVaultResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "name": "[concat(parameters('backupVaultName'), '/', 'Azure', '/', variables('v2Vm'), resourceGroup().name, ';', parameters('virtualMachineName'))]",
+              "apiVersion": "2017-07-01",
+              "type": "Microsoft.RecoveryServices/vaults/backupFabrics/backupProtectionIntent",
+              "properties": {
+                "friendlyName": "[concat(parameters('virtualMachineName'), 'BackupIntent')]",
+                "protectionIntentItemType": "AzureResourceItem",
+                "policyId": "[resourceId(parameters('backupVaultResourceGroup'),'Microsoft.RecoveryServices/vaults/backupPolicies', parameters('backupVaultName'), parameters('backupPolicyName'))]",
+                "sourceResourceId": "[resourceId(parameters('virtualMachineResourceGroup'), 'Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "rootUsername": {
+      "type": "string",
+      "value": "[parameters('rootUsername')]"
+    }
+  }
+}

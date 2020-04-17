@@ -1,0 +1,48 @@
+parameters:
+  moduleName: $(moduleName)
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
+  artifactName: $(artifactName)
+  connectionService: $(connectionService)
+  secretsFilter: $(secretsFilter)
+  resourceGroup: $(resourceGroup)
+  environment: $(environment)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
+  overrideParameters: $(overrideParameters) 
+  dependsOn: ''
+  condition: ''
+
+jobs:
+  - deployment:
+    displayName: 'Deploy Module ${{ parameters.moduleName }}'
+    pool:
+      name: $(poolName)
+    dependsOn: '${{ parameters.dependsOn }}'
+    condition: '${{ parameters.condition }}'
+    environment: '${{ parameters.environment }}'
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: '${{ parameters.artifactName }}'
+              downloadPath: $(System.ArtifactsDirectory)
+
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Deploy ${{ parameters.moduleName }}'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              resourceGroupName: '${{ parameters.resourceGroup }}'
+              location: '${{ parameters.location }}'
+              csmFile: '${{ parameters.templateFile }}'
+              csmParametersFile: '${{ parameters.parametersFile }}'
+              overrideParameters: '${{ parameters.overrideParameters }}'
+              deploymentMode: Incremental
+              deploymentOutputs: ResourceGroupDeploymentOutputs

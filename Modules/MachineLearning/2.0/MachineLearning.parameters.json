@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "value": "$(workspaceName)"
+    },
+    "planName": {
+      "value": "$(planName)"
+    },
+    "ownerEmail": {
+      "value": "$(ownerEmail)"
+    },
+    "skuName": {
+      "value": "S1"
+    },
+    "skuTier": {
+      "value": "Standard"
+    },
+    "skuCapacity": {
+      "value": 1
+    },
+    "storageAccountName": {
+      "value": "$(storageAccountName)"
+    },
+    "storageAccountSku": {
+      "value": "Standard_GRS"
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

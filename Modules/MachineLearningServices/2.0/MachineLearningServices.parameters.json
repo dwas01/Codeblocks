@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "value": "$(workspaceName)"
+    },
+    "storageAccountName": {
+      "value": "$(storageAccountName)"
+    },
+    "storageAccountSku": {
+      "value": "Standard_GRS"
+    },
+    "keyVaultResourceId": {
+      "value": "$(keyVaultResourceId)"
+    },
+    "appInsightsResourceId": {
+      "value": "$(appInsightsResourceId)"
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: rdy
+    secretsFilter: 'aksCluster--Name--digital-rdy-aks-001'
+    operationalSecretsFilter: 'aksPodIdentity--Name--digital-rdy-aks-mid,aksPodIdentity--ResourceGroup--digital-rdy-aks-mid'
+    operationalAccessSecretsFilter: 'aksCluster--SPNId--digital-rdy-aks-001,VirtualNetwork--Name--digital-aks-rdy,aksCluster--Name--digital-rdy-aks-001,aksCluster--ResourceGroup--digital-rdy-aks-001,aksPodIdentity--Name--digital-rdy-aks-mid,ContainerRegistry--Name--digitalrdyacr001,ContainerRegistry--ResourceGroup--digitalrdyacr001'
+    resourceGroup: RG-DIGITAL-KUB-RDY
+    clusterResourceGroup: MC_RG-DIGITAL-KUB-RDY_digital-rdy-aks-001_australiaeast
+    connectionService: RDY-connect-Azure-Sub
+    overrideParameters: ''    
+    akv: digital-rdy-akv-001

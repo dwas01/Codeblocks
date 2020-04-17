@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: EventHub.pipeline.variables.yaml
+- template: EventHub.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/EventHub/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: EventHub.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: EventHub.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: EventHub.pipeline.deploy.yaml

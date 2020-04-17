@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: CognitiveServices.pipeline.variables.yaml
+- template: CognitiveServices.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/CognitiveServices/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template:CognitiveServices.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template:CognitiveServices.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template:CognitiveServices.pipeline.deploy.yaml

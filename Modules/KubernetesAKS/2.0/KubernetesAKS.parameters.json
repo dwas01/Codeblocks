@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "aksClusterName": {
+      "value": "$(aksClusterName)"
+    },
+    "servicePrincipalId": {
+      "value": "$(servicePrincipalId)"
+    },
+    "servicePrincipalSecret": {
+      "value": "$(servicePrincipalSecret)"
+    },
+    "vNetResourceGroup": {
+      "value": "$(vNetResourceGroup)"
+    },
+    "vNetResourceName": {
+      "value": "$(vNetResourceName)"
+    },
+    "subnetName": {
+      "value": "$(subnetName)"
+    },
+    "serviceCIDR": {
+      "value": "10.203.1.64/27"
+    },
+    "dnsServiceIP": {
+      "value": "10.203.1.70"
+    },
+    "dockerBridgeCIDR": {
+      "value": "172.17.0.1/16"
+    },
+    "rbacClientAppID": {
+      "value": "$(rbacClientAppID)"
+    },
+    "rbacServerAppID": {
+      "value": "$(rbacServerAppID)"
+    },
+    "rbacTenantID": {
+      "value": "$(rbacTenantID)"
+    },
+    "rbacServerSecret": {
+      "value": "$(rbacServerSecret)"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "$(logAnalyticsWorkspaceId)"
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

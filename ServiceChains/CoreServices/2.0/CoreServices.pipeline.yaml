@@ -1,0 +1,41 @@
+name: $(pipelineName)-$(pipelineVersion)
+
+variables:
+- template: CoreServices.pipeline.variables.yaml
+- template: CoreServices.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+    - Pipelines/CoreServices
+
+stages:
+- stage: Build
+  jobs:
+  - template: ../../../Modules/KeyVault/2.0/Pipeline/KeyVault.pipeline.build.yaml
+  - template: ../../../Modules/LogAnalytics/2.0/Pipeline/LogAnalytics.pipeline.build.yaml
+  - template: ../../../Modules/StorageAccounts/2.0/Pipeline/StorageAccounts.pipeline.build.yaml
+  
+- stage: Validate
+  jobs:
+  - template: ../../../Modules/KeyVault/2.0/Pipeline/KeyVault.pipeline.validate.yaml
+  - template: ../../../Modules/LogAnalytics/2.0/Pipeline/LogAnalytics.pipeline.validate.yaml
+  - template: ../../../Modules/StorageAccounts/2.0/Pipeline/StorageAccounts.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: ../../../Modules/KeyVault/2.0/Pipeline/KeyVault.pipeline.deploy.yaml
+  - template: ../../../Modules/LogAnalytics/2.0/Pipeline/LogAnalytics.pipeline.deploy.yaml
+    parameters:      
+      dependsOn: Job1
+      condition: succeeded()
+  - template: ../../../Modules/StorageAccounts/2.0/Pipeline/StorageAccounts.pipeline.deploy.yaml
+    parameters:      
+      dependsOn: Job2
+      condition: succeeded()

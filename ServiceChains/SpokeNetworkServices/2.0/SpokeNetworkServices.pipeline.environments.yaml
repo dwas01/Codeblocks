@@ -1,0 +1,36 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    resourceGroup_asg: RG-DEV-SHD
+    resourceGroup_rot: RG-DEV-SHD
+    resourceGroup_nsg: RG-DEV-SHD
+    resourceGroup_net: RG-DEV-SHD
+    connectionService: azure-spn
+    akv: dev-akv-001
+  
+  ${{ if.eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    resourceGroup_asg: RG-SIT-SHD
+    resourceGroup_rot: RG-SIT-SHD
+    resourceGroup_nsg: RG-SIT-SHD
+    resourceGroup_net: RG-SIT-SHD
+    connectionService: azure-spn
+    akv: sit-akv-001
+
+  ${{ if.eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    resourceGroup_asg: RG-UAT-SHD
+    resourceGroup_rot: RG-UAT-SHD
+    resourceGroup_nsg: RG-UAT-SHD
+    resourceGroup_net: RG-UAT-SHD
+    connectionService: azure-spn
+    akv: uat-akv-001
+
+  ${{ if.eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    resourceGroup_asg: RG-PRD-SHD
+    resourceGroup_rot: RG-PRD-SHD
+    resourceGroup_nsg: RG-PRD-SHD
+    resourceGroup_net: RG-PRD-SHD
+    connectionService: azure-spn
+    akv: prd-akv-001

@@ -1,0 +1,9 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    secretsFilter: 'StorageAccount--AccessKey--<ResourceNameHere>,LogAnalytics--ResourceId--<ResourceNameHere>,StorageAccount--ResourceId--<ResourceNameHere>,StorageAccount--Name--<ResourceNameHere>'
+    scriptargumentsSQLPwd: '-keyVaultName "$(akv)" -keyVaultSecret "Digital--KeyVault--SQLAdminUserPwd--<ResourceNameHere>"'    
+    resourceGroup: RG-DEV-DAT
+    connectionService: azure-spn
+    overrideParameters: '-diagnosticStorageAccountAccessKey "$(StorageAccount--AccessKey--<ResourceNameHere>)" -diagnosticStorageAccountName "$(StorageAccount--Name--<ResourceNameHere>)" -diagnosticStorageAccountId "$(StorageAccount--ResourceId--<ResourceNameHere>)" -logAnalyticsWorkspaceId "$(LogAnalytics--ResourceId--<ResourceNameHere>)"'    
+    akv: dev-akv-001

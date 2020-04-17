@@ -1,0 +1,59 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyVaultName": {
+      "value": "$(keyVaultName)"
+    },
+    "accessPolicies": {
+      "value": [
+        {
+          "tenantId": "$(tenantId)",
+          "objectId": "$(objectId)",
+          "permissions": {
+            "certificates": [
+              "All"
+            ],
+            "keys": [
+              "All"
+            ],
+            "secrets": [
+              "All"
+            ]
+          }
+        }
+      ]
+    },
+    "secretsObject": {
+      "value": {
+        "secrets": [
+          {
+            "secretName": "TenantId",
+            "secretValue": ""
+          }
+        ]
+      }
+    },
+    "diagnosticStorageAccountId": {
+      "value": ""
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": ""
+    },
+    "logsRetentionInDays": {
+      "value": 30
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vNetName": {
+      "value": "$(vNetName)"
+    },
+    "vNetAddressPrefix": {
+      "value": "10.203.1.0/24"
+    },
+    "subnets": {
+      "value": [
+        {
+          "name": "vnt-001-subdmz",
+          "addressPrefix": "10.203.1.0/28",
+          "networkSecurityGroupName": "dev-nsg",
+          "routeTableName": "",
+          "serviceEndpoints": []
+        },
+        {
+          "name": "vnt-001-subkub",
+          "addressPrefix": "10.203.1.128/25",
+          "networkSecurityGroupName": "dev-nsg",
+          "routeTableName": "",
+          "serviceEndpoints": []
+        },
+        {
+          "name": "vnt-001-subapp",
+          "addressPrefix": "10.203.1.16/28",
+          "networkSecurityGroupName": "dev-nsg",
+          "routeTableName": "",
+          "serviceEndpoints": []
+        },
+        {
+          "name": "vnt-001-subdb",
+          "addressPrefix": "10.203.1.32/27",
+          "networkSecurityGroupName": "dev-nsg",
+          "routeTableName": "",
+          "serviceEndpoints": [
+            {
+              "service": "Microsoft.Sql"
+            }
+          ]
+        },
+        {
+          "name": "vnt-001-subapi",
+          "addressPrefix": "10.203.1.96/27",
+          "networkSecurityGroupName": "dev-nsg",
+          "routeTableName": "",
+          "serviceEndpoints": []
+        }
+      ]
+    },
+    "diagnosticStorageAccountId": {
+      "value": "$(diagnosticStorageAccountId)"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "$(logAnalyticsWorkspaceId)"
+    },
+    "logsRetentionInDays": {
+      "value": 30
+    },
+    "cuaId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "tagValues": {
+      "value": {
+        "Environment": "$(tagEnvironment)",
+        "Application": "$(tagApplication)",
+        "Project": "$(tagProject)]",
+        "Owner": "$(tagOwner)]",
+        "OwnerEmail": "$(tagOwnerEmail)"
+      }
+    }
+  }
+}

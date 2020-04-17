@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: SQLDataWarehouse.pipeline.variables.yaml
+- template: SQLDataWarehouse.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/SQLDataWarehouse/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: SQLDataWarehouse.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: SQLDataWarehouse.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: SQLDataWarehouse.pipeline.deploy.yaml

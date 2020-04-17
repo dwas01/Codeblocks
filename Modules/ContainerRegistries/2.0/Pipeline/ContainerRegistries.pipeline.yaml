@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: ContainerRegistries.pipeline.variables.yaml
+- template: ContainerRegistries.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/ContainerRegistries/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: ContainerRegistries.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: ContainerRegistries.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: ContainerRegistries.pipeline.deploy.yaml

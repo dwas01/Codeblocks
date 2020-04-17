@@ -1,0 +1,199 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlDatabasesNames": {
+      "type": "array",
+      "metadata": {
+        "description": "Required. Enter the SQL databases names to be created"
+      }
+    },
+    "sqlDatabaseCollation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": {
+        "description": "Optional. Enter SQL Database collation"
+      }
+    },
+    "sqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Enter the SQL Server Name"
+      }
+    },
+    "sku": {
+      "type": "array",
+      "metadata": {
+        "description": "Required. Array to pass through name and tier"
+      }
+    },
+    "transparentDataEncryption": {
+      "defaultValue": "Enabled",
+      "type": "string",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Optional. Enable/Disable Transparent Data Encryption"
+      }
+    },
+    "serverKeyType": {
+      "type": "string",
+      "defaultValue": "ServiceManaged",
+      "allowedValues": [
+        "ServiceManaged",
+        "AzureKeyVault"
+      ],
+      "metadata": {
+        "description": "The key type of the server (akv or service managed)"
+      }
+    },
+    "diagnosticStorageAccountId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of the Diagnostic Storage Account"
+      }
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource identifier of Log Analytics Workspace"
+      }
+    },
+    "logsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 0,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for, a value of 0 will retain data indefinitely"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Optional. Location for all Resources"
+      }
+    },
+    "cuaId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered"
+      }
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Azure Resource Tags object"
+      }
+    }
+  },
+  "variables": {
+    "sqlDataWarehouseApiVersion": "[providers('Microsoft.Sql','servers/databases').apiVersions[0]]",
+    "diagnosticStorageAccountId": "[parameters('diagnosticStorageAccountId')]",
+    "diagnosticWorkspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+    "pidName": "[concat('pid-', parameters('cuaId'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(parameters('cuaId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('pidName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "variables('sqlDataWarehouseApiVersion')",
+      "name": "[concat(parameters('sqlServerName'), '/', parameters('sqlDatabasesNames')[copyIndex()].databaseName)]",
+      "location": "[parameters('location')]",
+      "tags": "[if(empty(parameters('tagValues')), json('null'), parameters('tagValues'))]",
+      "kind": "v12.0,user,datawarehouse,gen2",
+      "sku": {
+        "name": "[parameters('sku')[0].name]",
+        "tier": "[parameters('sku')[0].tier]"
+      },
+      "properties": {
+        "collation": "[parameters('sqlDatabaseCollation')]",
+        "serverKeyType": "[parameters('serverKeyType')]"
+      },
+      "resources": [
+        {
+          "type": "transparentDataEncryption",
+          "apiVersion": "[providers('Microsoft.Sql','servers/databases/transparentDataEncryption').apiVersions[0]]",
+          "name": "current",
+          "dependsOn": [
+            "[parameters('sqlDatabasesNames')[copyIndex()].databaseName]"
+          ],
+          "properties": {
+            "status": "[parameters('transparentDataEncryption')]"
+          }
+        },
+        {
+          "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
+          "apiVersion": "2017-05-01-preview",
+          "name": "[concat(parameters('sqlDatabasesNames')[copyIndex()].databaseName, '/', 'diagnosticsSettingName')]",
+          "dependsOn": [
+            "[parameters('sqlDatabasesNames')[copyIndex()].databaseName]"
+          ],
+          "properties": {
+            "storageAccountId": "[variables('diagnosticStorageAccountId')]",
+            "workspaceId": "[variables('diagnosticWorkspaceId')]",
+            "logs": [
+              {
+                "category": "SQLSecurityAuditEvents",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 0,
+                  "enabled": false
+                }
+              },
+              {
+                "category": "ExecRequests",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 14,
+                  "enabled": true
+                }
+              },
+              {
+                "category": "SqlRequests",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 14,
+                  "enabled": true
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": false,
+                  "days": 0
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "copy": {
+        "name": "DatabaseLoop",
+        "count": "[length(parameters('sqlDatabasesNames'))]"
+      }
+    }
+  ],
+  "outputs": {}
+}

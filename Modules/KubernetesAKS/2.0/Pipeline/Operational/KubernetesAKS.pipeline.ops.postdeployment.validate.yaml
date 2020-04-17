@@ -1,0 +1,37 @@
+parameters:
+  moduleName: KubernetesAKS
+  moduleVersion: 2.0
+  moduleTier: Modules
+  moduleSolutionName: KubernetesAKS_2.0
+  artifactName: $(artifactName)
+  connectionService: $(connectionService)
+  resourceGroup: $(resourceGroup)
+  environment: $(environment)
+  location: $(location)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
+
+jobs:
+  - job: 'ValidateModule_${{ parameters.moduleName }}'
+    displayName: 'AKS Post Deployment - Validate ${{ parameters.moduleName }}'
+    pool:
+      name: $(poolName)
+    workspace:
+      clean: all
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: '${{ parameters.artifactName }}'
+        downloadPath: $(System.ArtifactsDirectory)
+
+    - task: AzureresourceGroupDeployment@2
+      displayName: 'Validate ${{ parameters.moduleName }}'
+      inputs:
+        azureSubscription: '${{ parameters.connectionService }}'
+        resourceGroupName: '${{ parameters.resourceGroup }}'
+        location: '${{ parameters.location }}'
+        csmFile: '${{ parameters.templateFile }}'
+        csmParametersFile: '${{ parameters.parametersFile }}'
+        deploymentMode: Validation

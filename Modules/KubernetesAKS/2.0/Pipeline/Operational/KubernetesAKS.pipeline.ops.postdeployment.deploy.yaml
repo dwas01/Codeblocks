@@ -1,0 +1,132 @@
+parameters:
+  moduleName: KubernetesAKS
+  moduleVersion: 2.0
+  moduleTier: Modules
+  moduleSolutionName: KubernetesAKS_2.0
+  artifactName: $(artifactName)
+  connectionService: $(connectionService)  
+  secretsFilter: $(secretsFilter)
+  operationalSecretsFilter: $(operationalSecretsFilter)
+  operationalAccessSecretsFilter: $(operationalAccessSecretsFilter) 
+  resourceGroup: $(resourceGroup)
+  clusterResourceGroup: $(clusterResourceGroup)
+  environment: $(environment)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
+  overrideParameters: $(overrideParameters)
+  dependsOn: ''
+  condition: ''  
+
+jobs:
+  - deployment:
+    displayName: 'AKS Post Deployment - Prepare Cluster and create Pod Identity'
+    pool:
+      name: $(poolName)
+    dependsOn: '${{ parameters.dependsOn }}'
+    condition: '${{ parameters.condition }}'
+    environment: '${{ parameters.environment }}'
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: '${{ parameters.artifactName }}'
+              downloadPath: $(System.ArtifactsDirectory)
+
+          - task: AzureKeyVault@1
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              KeyVaultName: $(AKV)
+              SecretsFilter: '${{ parameters.secretsFilter }}'
+
+          - task: KubectlInstaller@0
+            inputs:
+              kubectlVersion: 'latest'
+
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '${{ parameters.connectionService }}'
+              azureResourceGroup: '${{ parameters.resourceGroup }}'
+              kubernetesCluster: '$(aksCluster--Name--digital-rdy-aks-001)'
+              useClusterAdmin: true
+              command: 'apply'
+              arguments: '-f "$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Pipeline/aadpodidentity.rbac.not.enabled.yaml"'
+
+          - task: AzureresourceGroupDeployment@2
+            displayName: 'Deploy ${{ parameters.moduleName }}'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              resourceGroupName: '${{ parameters.clusterResourceGroup }}'
+              location: '${{ parameters.location }}'
+              csmFile: '${{ parameters.templateFile }}'
+              csmParametersFile: '${{ parameters.parametersFile }}'
+              overrideParameters: '${{ parameters.overrideParameters }}'
+              deploymentMode: Incremental
+              deploymentOutputs: resourceGroupDeploymentOutputs
+
+          - task: PowerShell@2
+            inputs:
+              targetType: 'inline'
+              script: |
+                $outputs = ConvertFrom-Json $($env:resourceGroupDeploymentOutputs)
+                foreach ($output in $outputs.PSObject.Properties) {
+                  Write-Host "##vso[task.setvariable variable=$($output.Name)]$($output.Value.value)"
+                }
+
+          - task: AzurePowerShell@4
+            displayName: 'Configuration - Add ${{ parameters.moduleName }} Operational Secrets to KeyVault'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.set.operational.secrets.ps1'
+              scriptarguments: '-keyVaultName "$(akv)" -aksPodIdentityName "$(aksPodIdentityName)" -aksPodIdentityResourceId "$(aksPodIdentityResourceId)" -aksPodIdentityResourceGroup "$(aksPodIdentityResourceGroup)"'
+              azurePowerShellVersion: LatestVersion
+
+  - deployment:
+    displayName: 'AKS Post Deployment - ACR access for Cluster SPN and Pod Identity'
+    pool:
+      name: $(poolName)
+    dependsOn: 'Job2'
+    condition: '${{ parameters.condition }}'
+    environment: '${{ parameters.environment }}'
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: '${{ parameters.artifactName }}'
+              downloadPath: $(System.ArtifactsDirectory)
+
+          - task: AzureKeyVault@1
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              KeyVaultName: $(AKV)
+              SecretsFilter: '${{ parameters.operationalAccessSecretsFilter }}'
+
+          - task: AzurePowerShell@4
+            displayName: 'VNET RBAC - AKS Cluster'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.role.assignment.vnet.ps1'
+              scriptarguments: '-aksClusterSPNId "$(aksCluster--SPNId--digital-rdy-aks-001)" -aksClustervNetName "$(VirtualNetwork--Name--digital-aks-rdy)"'
+              azurePowerShellVersion: LatestVersion
+
+          - task: AzurePowerShell@4
+            displayName: 'ACR RBAC - AKS Cluster and Pod Identity'
+            inputs:
+              azureSubscription: '${{ parameters.connectionService }}'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.role.assignment.acr.ps1'
+              scriptarguments: '-aksClusterSPNId "$(aksCluster--SPNId--digital-rdy-aks-001)" -aksClusterName "$(aksCluster--Name--digital-rdy-aks-001)" -aksClusterResourceGroup "$(aksCluster--ResourceGroup--digital-rdy-aks-001)" -aksPodIdentityName "$(aksPodIdentity--Name--digital-rdy-aks-mid)" -containerRegistryName "$(ContainerRegistry--Name--digitalrdyacr001)" -containerRegistryResourceGroup "$(ContainerRegistry--ResourceGroup--digitalrdyacr001)'
+              azurePowerShellVersion: LatestVersion

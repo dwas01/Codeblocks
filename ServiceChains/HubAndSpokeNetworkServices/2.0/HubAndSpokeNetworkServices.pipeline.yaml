@@ -1,0 +1,121 @@
+name: $(pipelineName)-$(pipelineVersion)
+
+variables:
+- template: HubAndSpokeNetworkServices.pipeline.variables.yaml
+- template: HubAndSpokeNetworkServices.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - master
+  paths:
+    include:
+    - ServiceChains/HubAndSpokeNetworkServices
+
+stages:
+- stage: Build
+  jobs:
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.build.yaml
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.build.yaml
+  - template: ../../../Modules/VirtualNetworkPeering/2.0/Pipeline/VirtualNetworkPeering.pipeline.build.yaml
+
+- stage: Validate_hub_Network
+  jobs:
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.validate.yaml
+    parameters:
+      templateFile: '$(templatefile_nsg)'
+      parametersFile: '$(parametersFile_nsg_hub)'
+      resourceGroup: '$(resourceGroup_nsg)'
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.validate.yaml
+    parameters:
+      templateFile: '$(templatefile_net)'
+      parametersFile: '$(parametersFile_net_hub)'
+      resourceGroup: '$(resourceGroup_net)'
+
+- stage: Validate_spoke01_Network
+  jobs:
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.validate.yaml
+    parameters:
+      templateFile: '$(templatefile_nsg)'
+      parametersFile: '$(parametersFile_nsg_spoke01)'
+      resourceGroup: '$(resourceGroup_nsg)'
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.validate.yaml
+    parameters:
+      templateFile: '$(templatefile_net)'
+      parametersFile: '$(parametersFile_net_spoke01)'
+      resourceGroup: '$(resourceGroup_net)'
+
+- stage: Validate_peer_hub2spoke01
+  jobs:
+  - template: ../../../Modules/VirtualNetworkPeering/2.0/Pipeline/VirtualNetworkPeering.pipeline.validate.yaml
+    parameters:
+      templateFile: '$(templatefile_vnp)'
+      parametersFile: '$(parametersFile_vnp_hub2spoke01)'
+      resourceGroup: '$(resourceGroup_vnp)'
+
+- stage: Validate_peer_spoke012hub
+  jobs:
+  - template: ../../../Modules/VirtualNetworkPeering/2.0/Pipeline/VirtualNetworkPeering.pipeline.validate.yaml
+    parameters:
+      templateFile: '$(templatefile_vnp)'
+      parametersFile: '$(parametersFile_vnp_spoke012hub)'
+      resourceGroup: '$(resourceGroup_vnp)'
+
+- stage: Deploy_hub_Network
+  jobs:
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.deploy.yaml
+    parameters:
+      secretsFilter: '$(secretsFilter_nsg)'    
+      templateFile: '$(templatefile_nsg)'
+      parametersFile: '$(parametersFile_nsg_hub)'
+      resourceGroup: '$(resourceGroup_nsg)'
+      overrideParameters: '$(overrideParameters_nsg)'
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.deploy.yaml
+    parameters:
+      secretsFilter: '$(secretsFilter_net)'    
+      templateFile: '$(templatefile_net)'
+      parametersFile: '$(parametersFile_net_hub)'
+      resourceGroup: '$(resourceGroup_net)'
+      overrideParameters: '$(overrideParameters_net)'
+      dependsOn: Job1
+      condition: succeeded()
+
+- stage: Deploy_spoke01_Network
+  jobs:
+  - template: ../../../Modules/NetworkSecurityGroups/2.0/Pipeline/NetworkSecurityGroups.pipeline.deploy.yaml
+    parameters:
+      secretsFilter: '$(secretsFilter_nsg)'    
+      templateFile: '$(templatefile_nsg)'
+      parametersFile: '$(parametersFile_nsg_spoke01)'
+      resourceGroup: '$(resourceGroup_nsg)'
+      overrideParameters: '$(overrideParameters_nsg)'
+  - template: ../../../Modules/VirtualNetwork/2.0/Pipeline/VirtualNetwork.pipeline.deploy.yaml
+    parameters:
+      secretsFilter: '$(secretsFilter_net)'    
+      templateFile: '$(templatefile_net)'
+      parametersFile: '$(parametersFile_net_spoke01)'
+      resourceGroup: '$(resourceGroup_net)'
+      overrideParameters: '$(overrideParameters_net)'
+      dependsOn: Job1
+      condition: succeeded()
+
+- stage: Deploy_peer_hub2spoke01
+  jobs:
+  - template: ../../../Modules/VirtualNetworkPeering/2.0/Pipeline/VirtualNetworkPeering.pipeline.deploy.yaml
+    parameters:
+      secretsFilter: '$(secretsFilter_vnp)'    
+      templateFile: '$(templatefile_vnp)'
+      parametersFile: '$(parametersFile_vnp_hub2spoke01)'
+      resourceGroup: '$(resourceGroup_vnp)'
+      overrideParameters: '$(overrideParameters_vnp_hub2spoke01)'
+
+- stage: Deploy_peer_spoke012hub
+  jobs:
+  - template: ../../../Modules/VirtualNetworkPeering/2.0/Pipeline/VirtualNetworkPeering.pipeline.deploy.yaml
+    parameters:
+      secretsFilter: '$(secretsFilter_vnp)'    
+      templateFile: '$(templatefile_vnp)'
+      parametersFile: '$(parametersFile_vnp_spoke012hub)'
+      resourceGroup: '$(resourceGroup_vnp)'
+      overrideParameters: '$(overrideParameters_vnp_spoke012hub)'

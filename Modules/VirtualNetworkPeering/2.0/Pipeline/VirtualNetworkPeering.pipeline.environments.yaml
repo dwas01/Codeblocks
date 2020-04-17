@@ -1,0 +1,32 @@
+variables:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    environment: dev
+    SecretsFilter: 'VirtualNetwork--ResourceId--<ResourceNameHere>'    
+    resourceGroup_vnp: RG-DEV-SHD
+    connectionService: azure-spn
+    overrideParameters: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)"'    
+    akv: dev-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    environment: sit
+    SecretsFilter: 'VirtualNetwork--ResourceId--<ResourceNameHere>'    
+    resourceGroup_vnp: RG-SIT-SHD
+    connectionService: azure-spn
+    overrideParameters: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)"'    
+    akv: sit-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+    environment: uat
+    SecretsFilter: 'VirtualNetwork--ResourceId--<ResourceNameHere>'    
+    resourceGroup_vnp: RG-UAT-SHD
+    connectionService: azure-spn
+    overrideParameters: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)"'    
+    akv: uat-akv-001
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    environment: prd
+    SecretsFilter: 'VirtualNetwork--ResourceId--<ResourceNameHere>'    
+    resourceGroup_vnp: RG-PRD-SHD
+    connectionService: azure-spn
+    overrideParameters: '-remoteVirtualNetworkId "$(VirtualNetwork--ResourceId--<ResourceNameHere>)"'    
+    akv: prd-akv-001

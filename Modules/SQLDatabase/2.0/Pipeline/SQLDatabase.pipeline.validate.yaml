@@ -1,0 +1,42 @@
+parameters:
+  moduleName: SQLDatabase
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
+  artifactName: $(artifactName)
+  connectionService: $(connectionService)
+  resourceGroup: $(resourceGroup)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
+
+jobs:
+  - job: 'ValidateModule_${{ parameters.moduleName }}'
+    displayName: 'Validate Module ${{ parameters.moduleName }}'
+    pool:
+      name: $(poolName)
+    workspace:
+      clean: all
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: '${{ parameters.artifactName }}'
+        downloadPath: $(System.ArtifactsDirectory)
+
+    - task: AzurePowerShell@4
+      displayName: 'Configuration - SQL Server DB Admin KeyVault Secret'
+      inputs:
+        azureSubscription: '${{ parameters.connectionService }}'
+        scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.admin.secrect.ps1'
+        scriptarguments: '-keyVaultName "$(akv)" -keyVaultSecret "$(Digital--KeyVault--<$sqlServerName>--SQLAdminUserPwd)"'
+        azurePowerShellVersion: LatestVersion
+
+    - task: AzureresourceGroupDeployment@2
+      displayName: 'Validate ${{ parameters.moduleName }}'
+      inputs:
+        azureSubscription: '${{ parameters.connectionService }}'
+        resourceGroupName: '${{ parameters.resourceGroup }}'
+        location: '${{ parameters.location }}'
+        csmFile: '${{ parameters.templateFile }}'
+        csmParametersFile: '${{ parameters.parametersFile }}'
+        deploymentMode: Validation

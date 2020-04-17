@@ -1,0 +1,29 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: KeyVault.pipeline.variables.yaml
+- template: KeyVault.pipeline.environments.yaml
+
+trigger:
+  branches:
+    include:
+      - develop
+      - staging
+      - release
+      - master
+  paths:
+    include:
+      - Modules/KeyVault/2.0
+
+stages:
+- stage: Build
+  jobs:
+  - template: KeyVault.pipeline.build.yaml
+
+- stage: Validate
+  jobs:
+  - template: KeyVault.pipeline.validate.yaml
+
+- stage: Deploy
+  jobs:
+  - template: KeyVault.pipeline.deploy.yaml
