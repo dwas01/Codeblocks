@@ -1,0 +1,43 @@
+name: $(moduleName)-$(moduleVersion)
+
+variables:
+- template: pipeline.module.variables.yaml
+- template: pipeline.variables.yaml
+
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+    - Modules/PipelineAgentsVM/*
+
+stages:
+- stage: Build
+  jobs:
+  - template: pipeline.jobs.build.yaml
+    parameters:
+      poolName: $(poolName)
+  
+- stage: Validate
+  jobs:
+  - template: pipeline.jobs.validate.yaml
+    parameters:
+      poolName: $(poolName)
+      parametersFile: '$(modulePath)/Parameters/parameters.json'
+      overrideParameters: '-adminPassword "$(adminPassword)"'
+      serviceConnection: $(serviceConnection)
+      resourceGroupName: $(resourceGroupName)
+      location: $(location)
+
+- stage: Deploy
+  jobs:
+  - template: pipeline.jobs.deploy.yaml
+    parameters:
+      poolName: $(poolName)
+      parametersFile: '$(modulePath)/Parameters/parameters.json'
+      overrideParameters: '-adminPassword "$(adminPassword)"'
+      serviceConnection: $(serviceConnection)
+      resourceGroupName: $(resourceGroupName)
+      location: $(location)
+

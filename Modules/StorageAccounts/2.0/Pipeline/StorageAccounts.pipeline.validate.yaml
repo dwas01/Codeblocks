@@ -1,13 +1,10 @@
 parameters:
   moduleName: StorageAccounts
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: StorageAccounts_2.0
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
   connectionService: $(connectionService)
   resourceGroup: $(resourceGroup)
-  environment: $(environment)
-  location: $(location)
   templateFile: $(templatefile)
   parametersFile: $(parametersfile)
 

@@ -1,0 +1,10 @@
+variables:
+- name: location
+  value: 'westeurope'
+- name: poolName
+  value: 'Self-Hosted (Production)'
+- name: resourceGroupName
+  value: <resourceGroupName>
+- name: serviceConnection
+  value: <serviceConnection>
+- group: vg.PipelineAgentsVM

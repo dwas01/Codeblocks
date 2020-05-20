@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>0b306dd4-9244-48c6-b03f-03a8e77266c5</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+  <Import Condition=" Exists('Deployment.targets') " Project="Deployment.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <!-- vertag<:>start tokens<:>maj.min -->
+  <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
+  <!-- vertag<:>end -->
+  <ItemGroup>
+    <None Include="Deployment.targets">
+      <Visible>False</Visible>
+    </None>
+    <None Include="Pipeline\VirtualNetworkPeering.pipeline.environments.yaml" />
+    <None Include="Pipeline\VirtualNetworkPeering.pipeline.build.yaml" />
+    <None Include="Pipeline\VirtualNetworkPeering.pipeline.deploy.yaml" />
+    <None Include="Pipeline\VirtualNetworkPeering.pipeline.validate.yaml" />
+    <None Include="Pipeline\VirtualNetworkPeering.pipeline.variables.yaml" />
+    <None Include="Pipeline\VirtualNetworkPeering.pipeline.yaml" />
+    <None Include="readme.md" />
+    <Content Include="Scripts\VirtualNetworkPeering.akv.get.secrets.ps1" />
+    <Content Include="Scripts\VirtualNetworkPeering.akv.set.secrets.ps1" />
+    <None Include="Tests\VirtualNetworkPeering.module.tests.ps1" />
+    <Content Include="Tests\VirtualNetworkPeering.output.tests.ps1" />
+    <Content Include="VirtualNetworkPeering.deploy.json" />
+    <Content Include="VirtualNetworkPeering.parameters.json" />
+  </ItemGroup>
+  <Target Name="GetReferenceAssemblyPaths" />
+</Project>

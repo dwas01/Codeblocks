@@ -1,14 +1,17 @@
 parameters:
-  moduleName: StreamAnalytics
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: StreamAnalytics_2.0
+  moduleName: $(moduleName)
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
+  connectionService: $(connectionService)
+  secretsFilter: $(secretsFilter)
+  resourceGroup: $(resourceGroup)
+  environment: $(environment)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
+  overrideParameters: $(overrideParameters) 
   dependsOn: ''
   condition: ''
-  connectionService: $(connectionService)
-  resourceGroup: $(resourceGroup_asa)
-  environment: $(environment)
 
 jobs:
   - deployment:
@@ -43,9 +46,10 @@ jobs:
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
               resourceGroupName: '${{ parameters.resourceGroup }}'
-              location: $(Location)
-              csmFile: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/${{ parameters.moduleName }}.deploy.json'
-              csmParametersFile: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/${{ parameters.moduleName }}.parameters.${{ parameters.environment }}.json'
+              location: '${{ parameters.location }}'
+              csmFile: '${{ parameters.templateFile }}'
+              csmParametersFile: '${{ parameters.parametersFile }}'
+              overrideParameters: '${{ parameters.overrideParameters }}'
               deploymentMode: Incremental
               deploymentOutputs: resourceGroupDeploymentOutputs
 
@@ -62,7 +66,7 @@ jobs:
             displayName: 'Test - ${{ parameters.moduleName }} Parameters'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
               scriptarguments: '-streamAnalyticsName "$(streamAnalyticsName)" -streamAnalyticsResourceId "$(streamAnalyticsResourceId)"	-streamAnalyticsresourceGroup "$(streamAnalyticsresourceGroup)"'
               azurePowerShellVersion: LatestVersion
      
@@ -70,6 +74,6 @@ jobs:
             displayName: 'Configuration - Add ${{ parameters.moduleName }} Secrets to KeyVault'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
               scriptarguments: '-keyVaultName "$(KeyVault--Name)" -streamAnalyticsName "$(streamAnalyticsName)" -streamAnalyticsResourceId "$(streamAnalyticsResourceId)"	-streamAnalyticsresourceGroup "$(streamAnalyticsresourceGroup)"'
               azurePowerShellVersion: LatestVersion

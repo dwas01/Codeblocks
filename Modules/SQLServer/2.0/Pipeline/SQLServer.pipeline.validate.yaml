@@ -1,13 +1,10 @@
 parameters:
   moduleName: SQLServer
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: SQLServer_2.0
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
   connectionService: $(connectionService)
   resourceGroup: $(resourceGroup)
-  environment: $(environment)
-  location: $(location)
   templateFile: $(templatefile)
   parametersFile: $(parametersfile)
 
@@ -30,7 +27,7 @@ jobs:
       displayName: 'Configuration - SQL Server DB Admin KeyVault Secret'
       inputs:
         azureSubscription: '${{ parameters.connectionService }}'
-        scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.admin.secrect.ps1'
+        scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Scripts/${{ parameters.moduleName }}.akv.admin.secrect.ps1'
         scriptarguments: '${{ parameters.scriptargumentsSQLPwd }}'
         azurePowerShellVersion: LatestVersion
 

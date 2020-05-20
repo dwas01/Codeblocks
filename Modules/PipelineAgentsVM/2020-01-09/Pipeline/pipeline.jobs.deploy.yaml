@@ -1,0 +1,69 @@
+parameters:
+  moduleName: 'PipelineAgentsVM'
+  poolName: ''
+  serviceConnection: ''
+  resourceGroupName: ''
+  location: ''
+  templateFile: '$(modulePath)/deploy.json'
+  parametersFile: '$(modulePath)/Parameters/parameters.json'
+  overrideParameters: ''
+  
+jobs:
+- job: 'DeployModule${{ parameters.moduleName }}'
+  displayName: ${{ parameters.moduleName }}
+  pool:
+    name: '${{ parameters.poolName }}'
+  variables:
+  - template: pipeline.module.variables.yaml
+  steps:
+    - task: AzureResourceGroupDeployment@2
+      displayName: 'Deploy ${{ parameters.moduleName }} in ${{ parameters.resourceGroupName }} via ${{ parameters.serviceConnection }}'
+      inputs:
+        azureSubscription: ${{ parameters.serviceConnection }}
+        resourceGroupName: ${{ parameters.resourceGroupName }}
+        location: ${{ parameters.location }}
+        csmFile: ${{ parameters.templateFile }}
+        csmParametersFile: ${{ parameters.parametersFile }}
+        overrideParameters: ${{ parameters.overrideParameters }}
+        deploymentMode: Incremental
+
+- job: PostDeployment
+  pool:
+    name: '${{ parameters.poolName }}'
+  variables:
+    - template: pipeline.module.variables.yaml
+  steps:
+    - task: AzureCLI@1
+      displayName: InstallDevOpsAgent
+      inputs:
+        azureSubscription: $(serviceConnection)
+        scriptLocation: inlineScript
+        inlineScript: |
+          az vm run-command invoke -g ${{ parameters.resourceGroupName }} -n $(virtualMachineName) --command-id RunShellScript --scripts "
+          su sshusertest ; 
+          mkdir /home/sshusertest/agent -p ;
+          cd /home/sshusertest/agent ;
+          wget https://vstsagentpackage.azureedge.net/agent/2.163.1/vsts-agent-linux-x64-2.163.1.tar.gz -nc ;
+          tar zxvf vsts-agent-linux-x64-2.163.1.tar.gz -k ;
+          sudo ./bin/installdependencies.sh ;
+          export AGENT_ALLOW_RUNASROOT=\"1\"
+          ./config.sh --unattended --acceptteeeula --url $(adoUrl) --auth PAT --token $(agentPoolToken) --pool \"$(agentPoolProd)\" ;
+          sudo ./svc.sh install ;
+          sudo ./svc.sh start ;"
+    - task: AzureCLI@1
+      enabled: false
+      displayName: Configure Managed Identity
+      inputs:
+        azureSubscription: $(serviceConnection)
+        scriptLocation: inlineScript
+        inlinceScripts: |
+          az vm identity assign -g ${{ parameters.resourceGroupName }} -n $(virtualMachineName) --identities $(managedIdentityName)
+    - task: AzureCLI@1
+      displayName: InstallAnsible
+      inputs:
+        azureSubscription: $(serviceConnection)
+        scriptLocation: inlineScript
+        inlineScript: |
+          az vm run-command invoke -g ${{ parameters.resourceGroupName }} -n $(virtualMachineName) --command-id RunShellScript --scripts "
+          echo
+          "

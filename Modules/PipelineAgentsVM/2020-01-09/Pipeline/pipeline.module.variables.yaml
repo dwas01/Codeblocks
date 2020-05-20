@@ -1,0 +1,7 @@
+variables:
+- name: moduleName
+  value: PipelineAgentsVM
+- name: moduleVersion
+  value: 2020-01-09
+- name: modulePath
+  value: Modules/$(moduleName)/$(ModuleVersion)

@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmNames": {
+            "value": ["PipelineAgentVM"]
+        },
+        "standardImage": {
+            "value": {
+                "publisher": "RedHat",
+                "offer": "RHEL",
+                "sku": "7-LVM",
+                "version": "latest"
+            }
+        },
+        "osDisk": {
+            "value": {
+                "createOption": "fromImage",
+                "diskSizeGB": "128",
+                "managedDisk": {
+                    "storageAccountType": "Premium_LRS"
+                }
+            }
+        },
+        "dataDisks": {
+            "value": [{
+                "caching": "ReadOnly",
+                "createOption": "Empty",
+                "diskSizeGB": "256",
+                "managedDisk": {
+                    "storageAccountType": "Premium_LRS"
+                }
+            },
+            {
+                "caching": "ReadOnly",
+                "createOption": "Empty",
+                "diskSizeGB": "128",
+                "managedDisk": {
+                    "storageAccountType": "Premium_LRS"
+                }
+            }]
+        },
+        "adminUsername": {
+            "value": "sshusertest"
+        },
+        "adminPassword": {
+            "value": "<ThisPasswordNeedsToComefromAVariableGroup>"
+        },
+        "subnetId": {
+            "value": "/subscriptions/72644eaf-2d9b-4fa3-abf8-d511c6368cd5/resourceGroups/<resourceGroup>/providers/Microsoft.Network/virtualNetworks/<vnet>/subnets/<subnet>"
+        },
+        "useAvailabilityZone": {
+            "value": true
+        },
+        "lockForDeletion": {
+            "value": false
+        },
+        "workspaceId": {
+            "value": "/subscriptions/72644eaf-2d9b-4fa3-abf8-d511c6368cd5/resourceGroups/<resourceGroup>/providers/Microsoft.OperationalInsights/workspaces/<logAnalytics>"
+        }
+    }
+}

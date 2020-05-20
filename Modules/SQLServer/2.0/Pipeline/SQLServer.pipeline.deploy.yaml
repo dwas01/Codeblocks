@@ -1,17 +1,15 @@
 parameters:
-  moduleName: SQLServer
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: SQLServer_2.0
+  moduleName: $(moduleName)
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
   connectionService: $(connectionService)
-  secretsFilter: $(secretsFilter) 
-  scriptargumentsSQLPwd: $(scriptargumentsSQLPwd)
+  secretsFilter: $(secretsFilter)
   resourceGroup: $(resourceGroup)
   environment: $(environment)
   templateFile: $(templatefile)
   parametersFile: $(parametersfile)
-  overrideParameters: $(overrideParameters)
+  overrideParameters: $(overrideParameters) 
   dependsOn: ''
   condition: ''
 
@@ -41,7 +39,7 @@ jobs:
             displayName: 'Configuration - SQL Server DB Admin KeyVault Secret'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.admin.secrect.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Scripts/${{ parameters.moduleName }}.akv.admin.secrect.ps1'
               scriptarguments: '${{ parameters.scriptargumentsSQLPwd }}'
               azurePowerShellVersion: LatestVersion
 
@@ -76,7 +74,7 @@ jobs:
             displayName: 'Test - ${{ parameters.moduleName }} Parameters'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
               scriptarguments: '-sqlServerdbName "$(sqlServerdbName)" -sqlServerdbResourceId "$(sqlServerdbResourceId)" -sqlServerdbResourceGroup "$(sqlServerdbResourceGroup)" -sqldbMedicalConnectionString "$(sqldbMedicalConnectionString)" -sqldbNotificationConnectionString "$(sqldbNotificationConnectionString)" -sqldbUserConnectionString "$(sqldbUserConnectionString)" -sqldbHazardConnectionString "$(sqldbHazardConnectionString)"'
               azurePowerShellVersion: LatestVersion
      
@@ -84,6 +82,6 @@ jobs:
             displayName: 'Configuration - Add ${{ parameters.moduleName }} Secrets to KeyVault'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
               scriptarguments: '-keyVaultName "$(akv)" -sqlServerdbName "$(sqlServerdbName)" -sqlServerdbResourceId "$(sqlServerdbResourceId)" -sqlServerdbResourceGroup "$(sqlServerdbResourceGroup)" -sqldbMedicalConnectionString "$(sqldbMedicalConnectionString)" -sqldbNotificationConnectionString "$(sqldbNotificationConnectionString)" -sqldbUserConnectionString "$(sqldbUserConnectionString)" -sqldbHazardConnectionString "$(sqldbHazardConnectionString)"'
               azurePowerShellVersion: LatestVersion

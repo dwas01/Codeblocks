@@ -1,12 +1,12 @@
 parameters:
   moduleName: StreamAnalytics
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: StreamAnalytics_2.0
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
   connectionService: $(connectionService)
-  resourceGroup: $(resourceGroup_asa)
-  environment: $(environment)
+  resourceGroup: $(resourceGroup)
+  templateFile: $(templatefile)
+  parametersFile: $(parametersfile)
 
 jobs:
   - job: 'ValidateModule_${{ parameters.moduleName }}'
@@ -28,7 +28,7 @@ jobs:
       inputs:
         azureSubscription: '${{ parameters.connectionService }}'
         resourceGroupName: '${{ parameters.resourceGroup }}'
-        location: $(location)
-        csmFile: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/${{ parameters.moduleName }}.deploy.json'
-        csmParametersFile: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/${{ parameters.moduleName }}.parameters.${{ parameters.environment }}.json'
+        location: '${{ parameters.location }}'
+        csmFile: '${{ parameters.templateFile }}'
+        csmParametersFile: '${{ parameters.parametersFile }}'
         deploymentMode: Validation

@@ -1,0 +1,29 @@
+parameters:
+  moduleName: 'PipelineAgentsVM'
+  poolName: ''
+  serviceConnection: ''
+  resourceGroupName: ''
+  location: ''
+  templateFile: '$(modulePath)/deploy.json'
+  parametersFile: '$(modulePath)/Parameters/parameters.json'
+  overrideParameters: ''
+
+jobs:
+- job: 'ValidateModule${{ parameters.moduleName }}'
+  displayName: ${{ parameters.moduleName }}
+  pool:
+    name: ${{ parameters.poolName }}
+  variables:
+  - template: pipeline.module.variables.yaml
+  steps:
+    - task: AzureResourceGroupDeployment@2
+      enabled: true
+      displayName: 'Validate ${{ parameters.moduleName }} in ${{ parameters.resourceGroupName }} via ${{ parameters.serviceConnection }}'
+      inputs:
+        azureSubscription: ${{ parameters.serviceConnection }}
+        resourceGroupName: ${{ parameters.resourceGroupName }}
+        location: ${{ parameters.location }}
+        csmFile: ${{ parameters.templateFile }}
+        csmParametersFile: ${{ parameters.parametersFile }}
+        overrideParameters: ${{ parameters.overrideParameters }}
+        deploymentMode: Validation

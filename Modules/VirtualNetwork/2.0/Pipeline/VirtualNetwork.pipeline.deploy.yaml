@@ -1,16 +1,15 @@
 parameters:
-  moduleName: VirtualNetwork
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: VirtualNetwork_2.0
+  moduleName: $(moduleName)
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
   connectionService: $(connectionService)
-  secretsFilter: $(secretsFilter) 
+  secretsFilter: $(secretsFilter)
   resourceGroup: $(resourceGroup)
   environment: $(environment)
   templateFile: $(templatefile)
   parametersFile: $(parametersfile)
-  overrideParameters: $(overrideParameters)
+  overrideParameters: $(overrideParameters) 
   dependsOn: ''
   condition: ''
 
@@ -67,7 +66,7 @@ jobs:
             displayName: 'Test - ${{ parameters.moduleName }} Parameters'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Tests/${{ parameters.moduleName }}.output.tests.ps1'
               scriptarguments: '-virtualNetworkName "$(virtualNetworkName)" -virtualNetworkResourceId "$(virtualNetworkResourceId)" -virtualNetworkresourceGroup "$(virtualNetworkresourceGroup)"'
               azurePowerShellVersion: LatestVersion
      
@@ -75,6 +74,6 @@ jobs:
             displayName: 'Configuration - Add ${{ parameters.moduleName }} Secrets to KeyVault'
             inputs:
               azureSubscription: '${{ parameters.connectionService }}'
-              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleSolutionName }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
+              scriptpath: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/${{ parameters.moduleTier }}/${{ parameters.moduleName }}/${{ parameters.moduleVersion }}/Scripts/${{ parameters.moduleName }}.akv.set.secrets.ps1'
               scriptarguments: '-keyVaultName "$(akv)" -virtualNetworkName "$(virtualNetworkName)" -virtualNetworkResourceId "$(virtualNetworkResourceId)" -virtualNetworkresourceGroup "$(virtualNetworkresourceGroup)"'
               azurePowerShellVersion: LatestVersion

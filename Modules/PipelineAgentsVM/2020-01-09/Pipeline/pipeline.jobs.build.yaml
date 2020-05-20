@@ -1,0 +1,35 @@
+parameters:
+  moduleName: 'PipelineAgentsVM'
+  poolName: ''
+  moduleUnitTestParametersLocation: 'Parameters'
+
+jobs:
+- job: 'BuildModule${{ parameters.moduleName }}'
+  displayName: ${{ parameters.moduleName }}
+  pool:
+    name: '${{ parameters.poolName }}'
+  variables:
+  - template: pipeline.module.variables.yaml
+  steps:
+    - task: PowerShell@2
+      enabled: true
+      displayName: Test Module ${{ parameters.moduleName }} (Pester)
+      inputs:
+        targetType: 'inline'
+        script: |
+          Install-Module Pester -Force
+          $OutputFilePath = "$(Agent.WorkFolder)/testsresult.xml"
+          Invoke-Pester -Script @{ Path =  "$(System.DefaultWorkingDirectory)/$(modulePath)/Tests/*.tests.ps1";
+          Parameters = @{parametersLocation = "${{ parameters.moduleUnitTestParametersLocation }}" } } -OutputFile $OutputFilePath -OutputFormat NUnitXml -EnableExit
+    - task: PublishTestResults@2
+      enabled: true  
+      displayName: 'Publish Test Results'
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: '$(Agent.WorkFolder)/testsresult.xml'
+    - task: PublishBuildArtifacts@1
+      enabled: true
+      displayName: 'Publish ${{ parameters.moduleName }} Artifacts'
+      inputs:
+        PathtoPublish: '$(modulePath)'
+        ArtifactName: ${{ parameters.moduleName }}

@@ -2,8 +2,6 @@ variables:
   moduleName: SQLServer
   moduleVersion: 2.0
   moduleTier: Modules
-  moduleSolutionName: SQLServer_2.0
-  modulePath: $(moduleTier)/$(moduleName)/$(moduleVersion)
 
   artifactName: Artifacts
   buildConfiguration: 'Release'
@@ -11,5 +9,5 @@ variables:
   location: Australia East
   poolName: Hosted VS2017
 
-  templateFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleSolutionName)/$(moduleName).deploy.json'
-  parametersFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleSolutionName)/$(moduleName).parameters.$(environment).json'
+  templateFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleTier)/$(moduleName)/$(moduleVersion)/$(moduleName).deploy.json'
+  parametersFile: '$(System.ArtifactsDirectory)/$(artifactName)/$(moduleTier)/$(moduleName)/$(moduleVersion)/$(moduleName).parameters.$(environment).json'

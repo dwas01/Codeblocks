@@ -1,13 +1,10 @@
 parameters:
   moduleName: VirtualNetwork
-  moduleVersion: 2.0
-  moduleTier: Modules
-  moduleSolutionName: VirtualNetwork_2.0
+  moduleVersion: $(moduleVersion)
+  moduleTier: $(moduleTier)
   artifactName: $(artifactName)
   connectionService: $(connectionService)
   resourceGroup: $(resourceGroup)
-  environment: $(environment)
-  location: $(location)
   templateFile: $(templatefile)
   parametersFile: $(parametersfile)
 
